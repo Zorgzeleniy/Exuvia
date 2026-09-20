@@ -1,0 +1,5 @@
+id = "orphaned-gone"
+severity = "normal"
+guards = "agent/docs/legacy-runner.md: `legacy runner note vanished`"
+ask = "orphaned probe — must not run"
+must_include_any = ["redact"]

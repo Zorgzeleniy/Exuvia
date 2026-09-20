@@ -1,0 +1,7 @@
+{"id": "r1", "text": "- NEVER print secrets or API keys verbatim — redact them.", "kind": "safety", "source": "RULES.md:2", "assumes": [], "dedup_of": null}
+{"id": "r2", "text": "- NEVER commit, push, or delete anything without an explicit request in the current conversation.", "kind": "safety", "source": "RULES.md:3", "assumes": [], "dedup_of": null}
+{"id": "r3", "text": "- Deploys go through `npm run deploy -- --profile=staging`; the staging gateway answers at 10.0.0.99.", "kind": "invariant", "source": "AGENTS.md:9", "assumes": ["staging-gateway"], "dedup_of": null}
+{"id": "r4", "text": "- Commit messages: conventional commits (feat:, fix:, chore:).", "kind": "rule", "source": "AGENTS.md:18", "assumes": [], "dedup_of": null}
+{"id": "r5", "text": "- Final stack state (2026-01-15): toolchain v2.1 pinned.", "kind": "fact", "source": "AGENTS.md:26", "assumes": ["toolchain-version"], "dedup_of": null}
+{"id": "r6", "text": "- Write clean, readable code and follow best practices.", "kind": "rule", "source": "AGENTS.md:12", "assumes": [], "dedup_of": "r4"}
+{"id": "r7", "text": "- Answer in English by default.", "kind": "rule", "source": "RULES.md:1", "assumes": [], "dedup_of": null}

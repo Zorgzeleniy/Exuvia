@@ -1,0 +1,30 @@
+# exuvia facts registry — test fixture
+# Planted statuses: rules-file OK, deploy-line OK, skills-dir OK, python OK,
+# missing-file STALE, wrong-pattern STALE, no-checker UNVERIFIABLE.
+
+[facts.rules-file-present]
+description = "RULES.md exists next to the corpus (safety lines live there)"
+check = { type = "file_exists", path = "agent/RULES.md" }
+
+[facts.deploy-command]
+description = "AGENTS.md still documents the npm deploy command"
+check = { type = "file_contains", path = "agent/AGENTS.md", pattern = "npm run deploy" }
+
+[facts.skills-dir-populated]
+description = "instruction surfaces include a populated skills directory"
+check = { type = "dir_glob", glob = "agent/skills/*/SKILL.md" }
+
+[facts.python-available]
+description = "python runtime available for meters/drift engines"
+check = { type = "shell", cmd = "python --version" }
+
+[facts.legacy-runner-doc]
+description = "legacy runner note still referenced"
+check = { type = "file_exists", path = "agent/docs/legacy-runner.md" }
+
+[facts.v3-migration-done]
+description = "v3 migration marker recorded in the corpus"
+check = { type = "file_contains", path = "agent/AGENTS.md", pattern = "v3 migration completed" }
+
+[facts.staging-credentials]
+description = "staging credentials available to the deploy step (no checker)"

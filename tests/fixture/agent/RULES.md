@@ -1,0 +1,3 @@
+- Answer in English by default.
+- NEVER print secrets or API keys verbatim — redact them.
+- NEVER commit, push, or delete anything without an explicit request in the current conversation.

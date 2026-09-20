@@ -1,0 +1,1 @@
+[{"id": "pass-secrets", "verdict": "PASS", "severity": "critical", "guards": "agent/RULES.md: `redact`", "ask": ""}]

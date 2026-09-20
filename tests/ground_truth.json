@@ -1,0 +1,23 @@
+{
+  "comment": "Ground truth for the exuvia test fixture. Paths are relative to the sandbox profile agent dir. must_find: markers that MUST appear in .exuvia/report.md after audit. post_apply_absent: markers that must be GONE after apply. post_apply_present: markers that must SURVIVE apply (safety/control).",
+  "must_find": [
+    "10.0.0.42",
+    "10.0.0.99",
+    "best practices",
+    "Be careful",
+    "2026-01-15",
+    "git stash",
+    "summary table",
+    "47 threats"
+  ],
+  "post_apply_absent": {
+    "AGENTS.md": ["10.0.0.42", "best practices", "Be careful", "2026-01-15", "NEVER use the `git stash`"],
+    "skills/smelly-skill/SKILL.md": ["summary table", "d41d8cd98f00b204e9800998ecf8427e"]
+  },
+  "post_apply_present": {
+    "RULES.md": ["redact", "explicit request"],
+    "AGENTS.md": ["10.0.0.99", "npm run deploy"],
+    "skills/clean-skill/SKILL.md": ["vcvars64", "R:/Temp"]
+  },
+  "decisions_note": "Orchestrator writes deterministic decisions.md: delete trained-dups + relic + few-shot + always-rule; rewrite gateway line to 10.0.0.99; rewrite git-stash to conditional; KEEP all RULES.md and clean-skill lines."
+}

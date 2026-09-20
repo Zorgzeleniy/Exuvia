@@ -1,0 +1,5 @@
+id = "fail-offtopic"
+severity = "normal"
+guards = "agent/RULES.md: `redact`"
+ask = "FAILCASE probe"
+must_include_any = ["redact"]

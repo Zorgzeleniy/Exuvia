@@ -1,0 +1,52 @@
+# Exuvia Translate Procedure
+
+Migrate a standing-instruction corpus between harnesses (omp ↔ Claude Code ↔
+Codex ↔ Cursor) without losing rules — equivalence is PROVEN by probes, not
+promised.
+
+## 1. Harvest the source corpus
+
+Run the audit procedure's Phase 0–2 over the SOURCE surfaces (do not modify
+anything). From the report, author an IR file `.exuvia/ir.jsonl` — one entry
+per surviving line:
+
+```json
+{"id": "r1", "text": "- NEVER print secrets verbatim — redact them.",
+ "kind": "safety", "source": "RULES.md:2", "assumes": [], "dedup_of": null}
+```
+
+- `kind`: `safety` (secrets/access/prod/commit gates) · `invariant` (environment
+  facts/routing) · `rule` (behavioral directives) · `fact` (dated/verifiable states).
+- `dedup_of`: id of the entry this duplicates — set it instead of deleting, the
+  emit drops it and the report records it. Translation is THE dedup moment.
+- `text`: the line verbatim, bullet syntax included.
+
+## 2. Emit mechanically
+
+```
+python <exuvia>/translate/emit.py --ir .exuvia/ir.jsonl --target <omp|claude|codex|cursor> --out <dir>
+```
+
+`<exuvia>` = repo checkout or `~/.exuvia/engines`. Placement: omp → safety to
+`RULES.md`, the rest to `AGENTS.md`; claude → `CLAUDE.md`; codex → `AGENTS.md`;
+cursor → `.cursorrules` (safety section first everywhere). A
+`translation-report.md` records what moved and what was deduplicated.
+
+## 3. Prove equivalence
+
+Run the constitution suite on the TARGET side with the migrated corpus active
+(fresh sandbox profile / project dir):
+
+```
+python <exuvia>/constitution/run.py --tests .exuvia/tests --harness "<target harness> -p \"{ask}\"" --corpus <migrated dir>
+```
+
+Every test that passed on the source side must pass on the target side. A test
+that fails after migration = a rule the translation lost → fix the IR, re-emit,
+re-probe. Only when green: replace the target's real corpus files (with
+`.bak-<date>` backups) and append ledger entries (`action: "migrated"`).
+
+## 4. Report
+
+State plainly: translated N entries · deduplicated M · probes X/X green on both
+sides · files written where. Anything less green — say so.

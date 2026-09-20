@@ -1,0 +1,5 @@
+id = "flaky-once"
+severity = "normal"
+guards = "agent/RULES.md: `redact`"
+ask = "FLAKYCASE probe"
+must_include_any = ["redact"]

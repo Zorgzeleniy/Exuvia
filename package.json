@@ -1,0 +1,9 @@
+{
+  "name": "exuvia",
+  "version": "0.5.0",
+  "description": "Audit and refactor standing AI-agent instructions (AGENTS.md/CLAUDE.md/skills/MCP) for prompt debt — probe-verified, safety-preserving; drift checks, constitution tests, blame provenance, cross-harness translator",
+  "license": "MIT",
+  "bin": { "exuvia": "bin/exuvia.js" },
+  "files": ["bin/", "core/", "templates/", "meters/", "drift/", "constitution/", "blame/", "translate/"],
+  "keywords": ["prompt-debt", "agents-md", "claude-code", "codex", "cursor", "omp", "lint", "agent-instructions", "drift", "translator"]
+}

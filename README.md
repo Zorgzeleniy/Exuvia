@@ -1,22 +1,196 @@
-# Exuvia
+<div align="center">
+
+# 🐍 EXUVIA
 
 **The shed skin of your AI agent. Collected.**
 
-Exuvia audits the standing instructions of your coding agent — `AGENTS.md`, `CLAUDE.md`, skills, subagent prompts, MCP tool descriptions — for **prompt debt**: stale facts, duplicates of behavior the model already has, relics of old models, always/never rules that should be conditions, and outright conflicts.
+**Your agent's instructions rot. Exuvia catches the rot — then PROVES the cleanup lost nothing.**
 
-Then it does what no linter does: it **proves** the cleanup lost nothing, with live headless probes.
+<a href="https://github.com/Zorgzeleniy/Exuvia/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT"></a>
+<a href="#-quick-start"><img src="https://img.shields.io/badge/works_with-Claude_Code_·_Codex_·_omp_·_Cursor_·_OpenCode-blue?style=flat-square" alt="5 harnesses"></a>
+<img src="https://img.shields.io/badge/version-0.5.0-orange?style=flat-square" alt="v0.5.0">
+<img src="https://img.shields.io/badge/engines-python_stdlib-teal?style=flat-square" alt="stdlib only">
+<img src="https://img.shields.io/badge/LLM_judgment-optional__and_separated-purple?style=flat-square" alt="human decides">
 
-## Install (same everywhere)
+**One command, no account, no API key.** `git clone https://github.com/Zorgzeleniy/Exuvia.git && node Exuvia/bin/exuvia.js init` **[→ Quick Start](#-quick-start)**
 
-```bash
-npx exuvia init        # detects Claude Code, Codex, omp, Cursor, OpenCode — installs the right adapter into each
-npx exuvia status      # what is installed where
-npx exuvia uninstall
+</div>
+
+---
+
+<div align="center">
+
+**[See it](#-see-it) · [Quick Start](#-quick-start) · [What it catches](#-what-it-catches) · [The Numbers](#-the-numbers) · [Commands](#-commands) · [What it never does](#-what-it-never-does) · [Roadmap](#-roadmap)**
+
+</div>
+
+---
+
+## 🐍 See it
+
+Every agent accumulates instructions that outlived the truth. Here is a real section of a real `AGENTS.md`, before and after exuvia — same agent, same rules that matter, and a live probe proving nothing died:
+
+<table>
+<tr>
+<th width="50%">🪦 Before · 3,362 bytes</th>
+<th width="50%">🐍 After · 1,180 bytes (−65%)</th>
+</tr>
+<tr>
+<td valign="top">
+
+```md
+## Ответы
+- Язык ответа = язык запроса (по умолчанию русский).
+  Формат = формату задачи: код, таблица, список.
+- Наблюдаемое утверждай прямо; ненаблюдаемое помечай [INFERENCE].
+
+## Workflow
+- Многошаговая задача → todo до начала работы. done только
+  с доказательством...
+- Фича/багфикс: сначала падающий тест, потом минимальный код.
+  Продакшн-код без красного теста НЕ сдавать.
+- Ревью диффа → skill://code-review. Security-ревью — хук на Stop.
+
+## Инструменты — предпочтения
+- read/grep/glob информативнее shell-эквивалентов...
+- Код-интеллект — только lsp; кросс-файловый rename — lsp rename...
+- Codemod → ast_edit; точечная правка → edit; создание → write.
+- Библиотека/фреймворк в задаче → сначала Context7...
+
+## Память
+- memory://root — эвристика, не истина...
+- Дurable урок сессии → learn.
 ```
 
-Manual (no npm yet): `git clone https://github.com/Zorgzeleniy/Exuvia.git && node Exuvia/bin/exuvia.js init`
+<td valign="top">
 
-## Use
+```md
+## Ответы
+- Наблюдаемое утверждай прямо; ненаблюдаемое
+  помечай `[INFERENCE]`.
+
+## Workflow
+- Фича/багфикс с новой логикой → сначала падающий тест;
+  мелкая правка — smoke-проверкой.
+- Security-ревью — хук на Stop.
+
+## Инструменты
+- Репо-поиск символов → MCP code-index.
+
+## Среда
+- Windows: python/node/git через PATH, слэши /.
+  Системные пути не трогать без явного запроса.
+```
+
+</td>
+</tr>
+</table>
+
+What went away: 15 lines the harness already enforces, one `memory://root` relic from a dead subsystem, four duplicate tool rules. What stayed: every invariant the model couldn't know. And the proof, from a fresh headless session right after the apply:
+
+```
+P1 secrets   → alive (source: RULES.md)
+P2 TDD       → alive (conditional form)
+P3 tool-preferences → alive (harness covers it, twice)
+```
+
+> Snakes don't shrink. They shed what stopped fitting. Your config should too.
+
+### It also catches things linters can't even see
+
+**Drift** — instructions contradicting the live machine (deterministic, no LLM):
+
+```
+| status | fact              | detail                                |
+|--------|-------------------|---------------------------------------|
+| STALE  | v3-migration-done | pattern not found                     |
+| STALE  | legacy-runner-doc | missing: docs/legacy-runner.md        |
+| UNVERIFIABLE | staging-credentials | no check defined                 |
+| OK     | deploy-command    | pattern found                         |
+```
+
+**Constitution tests** — rules that exist in the file but stopped *binding* the model:
+
+```
+PASS   commit-gate        "NEVER commit… without an explicit request" — quoted by a fresh session
+PASS   secrets-verbatim   "redact them" — quoted
+FLAKY  language-default   failed once, passed on retry — reported, not hidden
+```
+
+**MCP footprint** — what your MCP servers cost every single session, measured live off the wire:
+
+```
+| harness    | server     | tools | schema | tokens | cold ms |
+|------------|------------|------:|-------:|-------:|--------:|
+| omp/default | code-index |    14 | 6.4 KB |  1,430 |     442 |
+| omp/default | context7   |     2 | 4.5 KB |    989 |   1,269 |
+```
+
+Two tools, a thousand tokens, every session. That's the tax nobody shows you.
+
+---
+
+## 🌍 Why this exists
+
+Anthropic deleted 80% of Claude Code's system prompt without losing quality. OpenAI's new guidance says overloaded prompts now **hurt more than help** — new models execute instructions as contracts, so two conflicting rules destabilize behavior more than no rule at all.
+
+Meanwhile your `CLAUDE.md`, skills, subagents and MCP configs keep growing. Every "add a line to fix it" is a loan. The interest compounds as duplicates diverge and facts rot.
+
+Linters see file structure. Exuvia sees the loop: **what the instructions claim vs what the machine says vs what the model actually does** — and closes all three gaps with evidence, not vibes. The taxonomy matches the first academic catalog of AGENTS.md smells ([arXiv 2606.15828](https://arxiv.org/abs/2606.15828)).
+
+---
+
+## ⚡ Quick Start
+
+Detects every supported agent on your machine, installs the right adapter into each, deploys the python engines to `~/.exuvia/engines`. Safe to re-run.
+
+```bash
+git clone https://github.com/Zorgzeleniy/Exuvia.git && node Exuvia/bin/exuvia.js init
+```
+
+### 🕐 The first five minutes
+
+1. **Run the audit.** `/exuvia-audit` (Claude Code, Codex) or just ask *"audit my prompt debt"*. You get a report: every line categorized — invariant / trained-duplicate / relic / 90%-rule / conflict — with a recommendation each.
+2. **Decide.** Fill the DECISION column in `.exuvia/decisions.md`: yes / no / as-condition / merge. Exuvia never decides for you — analysis and action are separate sessions, on purpose.
+3. **Apply.** `/exuvia-apply` executes exactly your decisions: `.bak` backups first, then edits, then fresh headless probes quoting each rule to prove it survived. A probe that fails restores the line from backup.
+4. **Check drift.** `/exuvia-drift` diffs your facts registry against the live machine — milliseconds, no LLM, and half of real-world findings.
+5. **Prove your constitution.** `/exuvia-test` runs probe tests for your load-bearing rules. Wire it into CI: a PR that breaks a standing rule's binding goes red.
+
+---
+
+## 🧩 What it catches
+
+| Smell | Example from the wild | Caught by |
+|---|---|---|
+| **Trained duplicate** | "Write clean code, follow best practices" | audit, category 2 |
+| **Relic** | "Final stack state (2026-01-15): toolchain v2.1" when v3 shipped | audit cat. 3 + drift STALE |
+| **90% rule** | "NEVER use `git stash`" → becomes a condition | audit cat. 4 |
+| **Conflict** | Gateway `10.0.0.42` in AGENTS.md vs `10.0.0.99` in a skill | audit cat. 5 + blame (fresher provenance wins) |
+| **Stale fact** | "curl cannot write to disk" — refuted by three other files | drift |
+| **Dead rule** | safety line deleted by a "cleanup" PR | constitution FAIL |
+| **Context tax** | 2 MCP servers costing 2,400 tokens every session | meters |
+| **Lost origin** | "who wrote this rule and why?" | blame: ledger + session-log mining |
+
+---
+
+## 📊 The Numbers
+
+From this repo's committed test rig. Every number is reproducible with `python tests/run.py --t1` (free, seconds) and `--t2` (LLM, ~20 min).
+
+| What | Measured on | Result |
+|---|---|---|
+| **Audit recall** | realistic sandbox corpus: 21 vendored popular skills (superpowers, anthropics) + planted smells | **8/8 planted smells found**; also flagged macOS-only commands inside superpowers as platform debt |
+| **Apply safety** | same corpus, deterministic decisions | planted lines gone, **all safety lines survived**, control skill byte-identical, 5 backups, probes quoted the rules |
+| **Drift engine** | fixture registry, 7 planted facts | exact statuses: 4 OK · 2 STALE · 1 UNVERIFIABLE, 0.15 s, no LLM |
+| **Constitution runner** | 6 verdict classes incl. FLAKY-by-retry and ORPHANED | all reproduced deterministically against a fake harness; live run vs sandbox: 3/3 PASS in 13 s |
+| **Translator roundtrip** | omp → IR → omp, probe-checked | first run **caught a line genuinely lost in translation** (2/3 → FAIL), after IR fix 3/3 green |
+| **Real-world cleanup** (maintainer's own harness) | AGENTS.md + skills + MCP | AGENTS.md −65% · 17 low-quality skills removed · MCP surface 4.0k → 2.4k tokens/session |
+
+> The translator row is the product demo: the FAIL was a line the IR author actually lost. No probe, no catch. Where a number is red, it stays red.
+
+---
+
+## Commands
 
 | Command (Claude Code / Codex) | What it does |
 |---|---|
@@ -27,11 +201,13 @@ Manual (no npm yet): `git clone https://github.com/Zorgzeleniy/Exuvia.git && nod
 | `/exuvia-blame` | provenance of an instruction line: when, which model, why, still verified |
 | `/exuvia-translate` | migrate the corpus between harnesses (omp↔Claude↔Codex↔Cursor), equivalence proven by probes |
 
-omp / Cursor / OpenCode: the audit skill auto-triggers on "audit my prompt debt"; drift/constitution/blame/translate are installed as skills there too (ask for them by name).
+omp / Cursor / OpenCode: the audit skill auto-triggers on *"audit my prompt debt"*; drift/constitution/blame/translate install as skills too — ask for them by name. Engines: `~/.exuvia/engines` (python stdlib, zero dependencies).
 
-Audit writes `.exuvia/report.md` + `.exuvia/decisions.md`. You fill the decision column (yes / no / as-condition / merge). Apply executes exactly your decisions, backs up every file, records the ledger, and re-runs probes to verify no rule was lost.
+---
 
-## What it never does
+## 🚫 What it never does
+
+The five invariants are the product. Breaking any of them is a semver-major decision.
 
 1. **Never rewrites during audit.** Analysis and action are separate sessions; decisions are yours.
 2. **Never deletes safety lines.** Secrets, access, prod, commit/push gates are marked invariants — dedup/move only.
@@ -39,10 +215,17 @@ Audit writes `.exuvia/report.md` + `.exuvia/decisions.md`. You fill the decision
 4. **Never adds anything of its own.** Apply performs exactly the approved decisions, word for word.
 5. **Never claims a rule survived without a probe.** Verification = a fresh headless session quoting the rule.
 
-## Roadmap
+---
 
-✅ core audit/apply · ✅ MCP footprint meter · ✅ drift-core · ✅ constitution tests · ✅ blame provenance · ✅ cross-harness translator — **community benchmark (next)**.
+## 🗺️ Roadmap
 
-## License
+✅ core audit/apply · ✅ MCP footprint meter · ✅ drift-core · ✅ constitution tests · ✅ blame provenance · ✅ cross-harness translator — **community benchmark (next)** · npm publish (`npx exuvia init`).
 
-MIT
+The bet: models will soon write clean prompts themselves — but *instruction vs environment vs behavior* reconciliation can't be internalized by any model. Exuvia owns the facts and the feedback loop, not the prose style.
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](./LICENSE). Vendored test fixtures (superpowers, anthropics/skills) keep their own licenses.
+

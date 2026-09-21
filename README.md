@@ -20,7 +20,7 @@
 
 <div align="center">
 
-**[See it](#-see-it) · [Quick Start](#-quick-start) · [What it catches](#-what-it-catches) · [The Numbers](#-the-numbers) · [Commands](#-commands) · [What it never does](#-what-it-never-does) · [License](#-license)**
+**[See it](#-see-it) · [Quick Start](#-quick-start) · [What it catches](#-what-it-catches) · [The Numbers](#-the-numbers) · [Commands](#-commands) · [What it never does](#-what-it-never-does) · [Glossary](#-words-we-use) · [License](#-license)**
 
 </div>
 

@@ -64,7 +64,7 @@ Every agent accumulates instructions that outlived the truth. Here is a real `AG
 ```
 
 
-**1,775 → 365 bytes (−79%).** What went away: trained duplicates the model does anyway, a dated snapshot from January, always/never rules converted to conditions, and a conflicting gateway IP — updated to the fresh one instead of deleted. What stayed: every invariant the model couldn't know. And the proof, from fresh headless sessions right after the apply:
+**1,775 → 365 bytes (−79%).** What went away: trained duplicates the model does anyway, a dated snapshot from January, always/never rules converted to conditions, and a conflicting gateway IP — updated to the fresh one instead of deleted. What stayed: every invariant the model couldn't know. Fresh headless sessions quoted the survivors right after the apply:
 
 ```
 P1 secrets    → alive (source: RULES.md) — quoted verbatim by a fresh session
@@ -110,7 +110,7 @@ FLAKY  language-default   failed once, passed on retry — reported, not hidden
 | context7   | omp/default,omp/parse |    2 |  4,596 |    989 |    48 | 2026-09-20 |
 ```
 
-Fourteen tools, 1,430 tokens, every single session, zero invocations ever. That's the tax nobody shows you — now with the number that proves it.
+Fourteen tools, 1,430 tokens, every single session, zero invocations ever. That number is the case for disabling it.
 
 </details>
 
@@ -123,6 +123,18 @@ Anthropic deleted 80% of Claude Code's system prompt without losing quality. Ope
 Meanwhile your `CLAUDE.md`, skills, subagents and MCP configs keep growing. Every "add a line to fix it" is a loan. The interest compounds as duplicates diverge and facts rot.
 
 Linters see file structure. Exuvia sees the loop: **what the instructions claim vs what the machine says vs what the model actually does** — and closes all three gaps with evidence, not vibes. The taxonomy matches the first academic catalog of AGENTS.md smells ([arXiv 2606.15828](https://arxiv.org/abs/2606.15828)).
+
+---
+
+## 📈 It compounds
+
+Everything exuvia does leaves an asset behind, and the assets stack:
+
+- Every audit leaves a facts registry, probe tests, and a ledger. The next audit starts from them, not from zero.
+- Every session your agents run feeds the mined history: usage counts, provenance, drift baselines. The longer you have been using AI agents, the sharper the answer to "is this instruction worth its tokens?"
+- Every migration is recorded in the ledger. Switching harnesses stops being archaeology.
+
+It starts as a linter. It grows into the record of every rule you approved, tested, and shed.
 
 ---
 
@@ -140,9 +152,9 @@ git clone https://github.com/Zorgzeleniy/Exuvia.git && node Exuvia/bin/exuvia.js
 
 1. **Run the audit.** `/exuvia-audit` (Claude Code, Codex) or just ask *"audit my prompt debt"*. You get a report: every line categorized — invariant / trained-duplicate / relic / 90%-rule / conflict — with a recommendation each.
 2. **Decide.** Fill the DECISION column in `.exuvia/decisions.md`: yes / no / as-condition / merge. Exuvia never decides for you — analysis and action are separate sessions, on purpose.
-3. **Apply.** `/exuvia-apply` executes exactly your decisions: `.bak` backups first, then edits, then fresh headless probes quoting each rule to prove it survived. A probe that fails restores the line from backup.
+3. **Apply.** `/exuvia-apply` executes exactly your decisions: `.bak` backups first, then edits, then fresh headless probes quoting each surviving rule. A probe that fails restores the line from backup.
 4. **Check drift.** `/exuvia-drift` diffs your facts registry against the live machine — milliseconds, no LLM, and half of real-world findings.
-5. **Prove your constitution.** `/exuvia-test` runs probe tests for your load-bearing rules. Wire it into CI: a PR that breaks a standing rule's binding goes red.
+5. **Test your constitution.** `/exuvia-test` runs probe tests for your load-bearing rules. Wire it into CI: a PR that breaks a standing rule's binding goes red.
 
 ---
 
@@ -183,10 +195,10 @@ From this repo's committed test rig. Every number is reproducible with `python t
 | Command (Claude Code / Codex) | What it does |
 |---|---|
 | `/exuvia-audit` | 5-category revision of your instruction corpus → report + decisions file (you decide) |
-| `/exuvia-apply` | executes exactly your decisions: backups, edits, ledger, probes proving nothing was lost |
+| `/exuvia-apply` | executes exactly your decisions: backups, edits, ledger, probes that quote every surviving rule |
 | `/exuvia-drift` | facts-vs-environment diff: which standing facts are STALE |
 | `/exuvia-test` | constitution tests: prove rules are LIVE in fresh sessions |
-| `/exuvia-translate` | migrate the corpus between harnesses (omp↔Claude↔Codex↔Cursor), equivalence proven by probes |
+| `/exuvia-translate` | migrate the corpus between harnesses (omp↔Claude↔Codex↔Cursor), probe-checked equivalence |
 
 omp / Cursor / OpenCode: the audit skill auto-triggers on *"audit my prompt debt"*; drift/constitution/blame/translate install as skills too — ask for them by name. Engines: `~/.exuvia/engines` (python stdlib, zero dependencies).
 

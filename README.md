@@ -123,6 +123,8 @@ Meanwhile your `CLAUDE.md`, skills, subagents and MCP configs keep growing. Ever
 
 Linters see file structure. Exuvia sees the loop: **what the instructions claim vs what the machine says vs what the model actually does** — and closes all three gaps with evidence, not vibes. The taxonomy matches the first academic catalog of AGENTS.md smells ([arXiv 2606.15828](https://arxiv.org/abs/2606.15828)).
 
+A preregistered 4,644-run study put numbers on the mechanism ([arXiv 2608.01347](https://arxiv.org/abs/2608.01347)): prompt **length** is nearly free — verbose repetition measures ~1.0× — while phrases that **order extra work** are not. "Compare several approaches" multiplies reasoning 2.4–7.4× and buys ~3 elaborated-but-discarded branches per task; certainty language ("make absolutely sure") escalates into verification loops up to 18× the clean-run cost with zero success gain. The most dangerous line in your config isn't the verbose one — it's the *plausible wrong hint*: a confident stale fact raised reasoning 2.61× and cut success, while irrelevant noise measured nearly free. And the harness amplifies all of it: a heavy standing prefix replays those consequences every single turn.
+
 ---
 
 ## 📈 It compounds

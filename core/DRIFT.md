@@ -11,7 +11,9 @@ python <exuvia>/drift/check.py --facts .exuvia/facts.toml --base <repo-or-profil
 `<exuvia>` = the repo checkout or the installed engines dir (`~/.exuvia/engines`).
 
 Statuses: `OK` (fact holds) · `STALE` (fact contradicts the environment — this
-is prompt debt) · `UNVERIFIABLE` (no checker) · `ERROR` (checker broke).
+is prompt debt) · `UNVERIFIABLE` (no check defined) · `ERROR` (checker broke).
+
+MCP pay-vs-use is picked up automatically: if `<base>/.exuvia/mcp_footprint.json` exists (written by meters during audit, or manually), every server becomes a fact — `mcp:<server>` — STALE when its standing token cost meets no usage (0 calls, or last used older than `--mcp-stale-days`, default 30; threshold `--mcp-min-tokens`, default 500).
 
 ## 2. Read the STALE table, propose resolutions
 

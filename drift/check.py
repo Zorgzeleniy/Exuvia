@@ -59,10 +59,46 @@ def run_check(check: dict, base: Path) -> tuple[str, str]:
         return ("ERROR", f"{type(e).__name__}: {e}"[:120])
 
 
+def mcp_rows(path: Path, min_tokens: int, stale_days: int) -> list[dict]:
+    """MCP pay-vs-use facts from a meters output (.exuvia/mcp_footprint.json).
+    STALE = standing token cost with no usage (or usage older than stale_days)."""
+    from datetime import date
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        return [{"id": "mcp:footprint", "status": "UNVERIFIABLE",
+                 "detail": f"footprint json unreadable: {e}", "description": "MCP footprint"}]
+    rows = []
+    today = date.today()
+    for r in data.get("rows", []):
+        name = r.get("server", "?")
+        if "error" in r:
+            rows.append({"id": f"mcp:{name}", "status": "UNVERIFIABLE",
+                         "detail": f"meter error: {r['error'][:60]}",
+                         "description": "MCP server footprint vs usage"})
+            continue
+        toks, calls, lu = r.get("tokens", 0), r.get("calls", 0), r.get("last_used")
+        if toks < min_tokens:
+            status, detail = "OK", f"{toks} tokens/session (below {min_tokens} threshold)"
+        elif calls == 0:
+            status, detail = "STALE", f"{toks:,} tokens/session, 0 calls ever"
+        elif lu and (today - date.fromisoformat(lu)).days > stale_days:
+            status, detail = "STALE", f"{toks:,} tokens/session, last used {lu}"
+        else:
+            status, detail = "OK", f"{toks:,} tokens/session, {calls} calls, last {lu}"
+        rows.append({"id": f"mcp:{name}", "status": status, "detail": detail,
+                     "description": "MCP server footprint vs usage"})
+    return rows
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="exuvia drift check")
     ap.add_argument("--facts", default=".exuvia/facts.toml")
     ap.add_argument("--base", default=".", help="dir against which relative paths resolve")
+    ap.add_argument("--mcp-footprint", default=None,
+                    help="meters output json (default: <base>/.exuvia/mcp_footprint.json when present)")
+    ap.add_argument("--mcp-min-tokens", type=int, default=500)
+    ap.add_argument("--mcp-stale-days", type=int, default=30)
     ap.add_argument("--out", default=None, help="optional JSON output path")
     a = ap.parse_args()
 
@@ -80,6 +116,9 @@ def main() -> int:
         status, detail = run_check(spec.get("check") or {}, base)
         rows.append({"id": fid, "status": status, "detail": detail,
                      "description": spec.get("description", "")})
+    fp = Path(a.mcp_footprint) if a.mcp_footprint else base / ".exuvia/mcp_footprint.json"
+    if fp.exists():
+        rows.extend(mcp_rows(fp, a.mcp_min_tokens, a.mcp_stale_days))
 
     order = {"STALE": 0, "ERROR": 1, "UNVERIFIABLE": 2, "OK": 3}
     rows.sort(key=lambda r: (order[r["status"]], r["id"]))

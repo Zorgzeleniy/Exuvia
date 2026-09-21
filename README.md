@@ -114,14 +114,14 @@ P3 language   → alive — "English by default" quoted
 **Drift** — instructions contradicting the live machine (deterministic, no LLM):
 
 ```
-| status | fact              | detail                                |
-|--------|-------------------|---------------------------------------|
-| STALE  | v3-migration-done | pattern not found                     |
-| STALE  | legacy-runner-doc | missing: docs/legacy-runner.md        |
-| UNVERIFIABLE | staging-credentials | no check defined                 |
-| OK     | deploy-command    | pattern found                         |
+| status       | fact                | detail                                |
+|--------------|---------------------|---------------------------------------|
+| STALE        | v3-migration-done   | pattern not found                     |
+| STALE        | mcp:code-index      | 1,430 tokens/session, 0 calls ever    |
+| STALE        | legacy-runner-doc   | missing: docs/legacy-runner.md        |
+| UNVERIFIABLE | staging-credentials | no check defined                      |
+| OK           | deploy-command      | pattern found                         |
 ```
-
 **Constitution tests** — rules that exist in the file but stopped *binding* the model:
 
 ```

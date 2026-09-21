@@ -10,7 +10,7 @@
 - English only. All outputs land in `.exuvia/` inside the audited project.
 - The five invariants (README "What it never does") are the product — any change to them is a semver-major decision.
 - Probes: `claude -p` / `codex exec` / `omp -p` — harness-detected, never hardcoded.
-- meters v0.6: essential metrics only (tools/bytes/tokens + calls/last_used — cold_ms, desc_avg, kb dropped); usage telemetry via session-log mining (`mcp__<server>_` prefix attributed against known server names; omp routes MCP through xd:// writes, claude through mcp__ toolCalls — both contain the prefix). `--sessions` REPLACES defaults (argparse append-with-default pitfall); defaults include ~/.omp/agent/sessions + all profile session dirs. Unique servers measured once, harnesses joined. Audit step 7 semantics: calls=0 or stale last_used → disable candidate backed by a number.
+- drift×mcp (v0.6): check.py auto-loads <base>/.exuvia/mcp_footprint.json when present (or --mcp-footprint); rows mcp:<server>: STALE if tokens>=--mcp-min-tokens (500) AND (calls==0 OR last_used older than --mcp-stale-days 30); meter-error rows → UNVERIFIABLE; missing file → silent skip (no phantom rows). T1 asserts the full merge (6 OK / 3 STALE / 2 UNVERIFIABLE on fixture).
 
 ## Test rig (tests/run.py)
 - T1 deterministic (free): render, installer idempotency, meters, drift statuses, constitution engine via fake harness, blame card. Current: 7/7.

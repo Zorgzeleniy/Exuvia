@@ -73,7 +73,9 @@ def t1() -> None:
               f"calls={row.get('calls')} last={row.get('last_used')}")
 
     d = sh(["python", "drift/check.py", "--facts", "tests/fixture/exuvia/facts.toml",
-            "--base", "tests/fixture", "--out", "tests/out/drift.json"])
+            "--base", "tests/fixture",
+            "--mcp-footprint", "tests/fixture/exuvia/mcp_footprint.json",
+            "--out", "tests/out/drift.json"])
     d_ok = d.returncode == 1
     detail = (d.stderr or "")[-120:]
     if d_ok:
@@ -81,9 +83,10 @@ def t1() -> None:
         stales = sorted(r["id"] for r in drows if r["status"] == "STALE")
         n_unv = len([r for r in drows if r["status"] == "UNVERIFIABLE"])
         n_ok = len([r for r in drows if r["status"] == "OK"])
-        d_ok = stales == ["legacy-runner-doc", "v3-migration-done"] and n_unv == 1 and n_ok == 4
+        d_ok = (stales == ["legacy-runner-doc", "mcp:heavy-unused", "v3-migration-done"]
+                and n_unv == 2 and n_ok == 6)
         detail = f"OK={n_ok} STALE={stales} UNVERIFIABLE={n_unv}"
-    check("drift: planted statuses detected", d_ok, detail)
+    check("drift: planted statuses + MCP pay-vs-use detected", d_ok, detail)
 
     (REPO / "tests/fake_harness.py").with_suffix(".state").unlink(missing_ok=True)
     c = sh(["python", "constitution/run.py", "--tests", "tests/const_fixture",

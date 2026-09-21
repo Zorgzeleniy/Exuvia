@@ -1,0 +1,9 @@
+{
+  "generated": "2026-09-21T00:00:00",
+  "rows": [
+    {"server": "heavy-unused", "harnesses": "explicit", "tools": 9, "bytes": 9000, "tokens": 1800, "tokens_approx": false, "calls": 0, "last_used": null},
+    {"server": "heavy-used", "harnesses": "explicit", "tools": 2, "bytes": 4000, "tokens": 900, "tokens_approx": false, "calls": 40, "last_used": "2026-09-20"},
+    {"server": "light-unused", "harnesses": "explicit", "tools": 1, "bytes": 400, "tokens": 80, "tokens_approx": false, "calls": 0, "last_used": null},
+    {"server": "broken-meter", "harnesses": "explicit", "error": "RuntimeError: server closed stdout"}
+  ]
+}

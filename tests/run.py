@@ -56,6 +56,7 @@ def t1() -> None:
           and " + " not in second.stdout, "second run adds nothing")
 
     r = sh(["python", "meters/mcp_footprint.py", "--config", "tests/fixture/agent/mcp.json",
+            "--sessions", "tests/fixture/blame/sessions",
             "--out", "tests/out/fake_mcp.json"])
     ok = r.returncode == 0
     row = {}
@@ -65,9 +66,11 @@ def t1() -> None:
         row = rows[0] if rows else {}
     check("meters: fake MCP measured", ok and bool(row), r.stderr.strip()[-120:] if not ok else "")
     if row:
-        check("meters: 3 tools / ~bytes / delay honored",
-              row.get("tools") == 3 and 1200 <= row.get("bytes", 0) <= 4000 and row.get("cold_ms", 0) >= 150,
-              f"tools={row.get('tools')} bytes={row.get('bytes')} cold={row.get('cold_ms')}ms tokens={row.get('tokens')}")
+        check("meters: weight + tokens + usage telemetry",
+              row.get("tools") == 3 and 1200 <= row.get("bytes", 0) <= 4000
+              and row.get("calls", 0) >= 2 and row.get("last_used") == "2026-09-03",
+              f"tools={row.get('tools')} bytes={row.get('bytes')} tokens={row.get('tokens')} "
+              f"calls={row.get('calls')} last={row.get('last_used')}")
 
     d = sh(["python", "drift/check.py", "--facts", "tests/fixture/exuvia/facts.toml",
             "--base", "tests/fixture", "--out", "tests/out/drift.json"])

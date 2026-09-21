@@ -25,7 +25,7 @@ For every inventoried file compute:
 4. Dead references: every `skill://name`, `@path`, agent name — verify the target exists.
 5. Dated snapshots: regex `\d{4}-\d{2}-\d{2}` and version pins `\d+\.\d+(\.\d+)?` — list fact · date/version · age in days.
 6. Few-shot blocks: output examples / mock reports (```-blocks > 10 lines with fabricated data).
-7. Live MCP surfaces (requires python3): run `python <exuvia>/meters/mcp_footprint.py --out .exuvia/mcp_footprint.json`, where `<exuvia>` is the repo checkout or the installed engines dir (`~/.exuvia/engines`). Every configured MCP server contributes its tools payload (names + descriptions + inputSchemas) to EVERY session context — record per-server rows: server · tools · tokens · cold_ms. Treat each server as an instruction surface; a server whose tools no real session ever invokes is a disable candidate.
+7. Live MCP surfaces (requires python3): run `python <exuvia>/meters/mcp_footprint.py --out .exuvia/mcp_footprint.json`, where `<exuvia>` is the repo checkout or the installed engines dir (`~/.exuvia/engines`). Measures each unique server's standing context payload AND its actual usage mined from session logs — record per-server rows: server · tools · bytes · tokens · calls · last_used. Treat each server as an instruction surface; a server with a permanent token cost and `calls = 0` (or stale `last_used`) is a disable candidate backed by a number, not an opinion.
 
 ## Phase 2 — Categorization (if two fit, name the dominant one)
 

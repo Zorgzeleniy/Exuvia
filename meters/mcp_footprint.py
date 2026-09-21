@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""exuvia meter: live MCP context footprint.
+"""exuvia meter: live MCP context footprint + usage telemetry.
 
-Connects to every MCP server in the discovered harness configs, performs the
-initialize + tools/list handshake, and measures the exact payload that lands in
-each session's context: tool names + descriptions + inputSchemas (compact JSON).
+For every MCP server in the discovered harness configs:
+  - measures the standing context payload (initialize + tools/list →
+    names + descriptions + inputSchemas) — what EVERY session pays;
+  - mines harness session logs for actual invocations (mcp__<server>_ patterns),
+    so "weight" and "usage" sit in one row: pay-vs-use.
 
-Tokens via tiktoken cl100k when available (approximation; every provider has its
-own tokenizer), otherwise bytes/4 marked "approx".
+Metrics kept (essential only): tools · bytes (weight) · tokens (cl100k when
+available, else bytes/4 marked ~) · calls · last_used.
 
 Never writes configs. Expands ${VAR} header values at runtime, never prints them.
 """
@@ -16,6 +18,7 @@ import argparse
 import asyncio
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -35,7 +38,7 @@ except ImportError:
 
 HOME = Path.home()
 INIT_PARAMS = {"protocolVersion": "2025-06-18", "capabilities": {},
-               "clientInfo": {"name": "exuvia-meter", "version": "0.2.0"}}
+               "clientInfo": {"name": "exuvia-meter", "version": "0.6.0"}}
 
 
 def discover_configs(explicit: list[str] | None) -> list[tuple[str, Path]]:
@@ -89,12 +92,11 @@ def _read_result(fd_out, want_id: int) -> dict:
     raise RuntimeError("server closed stdout before answering")
 
 
-def stdio_tools_sync(cfg: dict, timeout: float) -> tuple[list, int]:
+def stdio_tools_sync(cfg: dict, timeout: float) -> list:
     env = {**os.environ, **{k: v for k, v in (cfg.get("env") or {}).items()}}
     cmd, args = cfg.get("command", ""), [str(a) for a in (cfg.get("args") or [])]
     if sys.platform == "win32" and cmd in ("npx", "node"):
         cmd, args = "cmd", ["/c", cmd, *args]
-    t0 = time.monotonic()
     p = subprocess.Popen([cmd, *args], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          stderr=subprocess.DEVNULL, env=env, cwd=cfg.get("cwd"))
     watchdog = threading.Timer(timeout, p.kill)
@@ -106,9 +108,7 @@ def stdio_tools_sync(cfg: dict, timeout: float) -> tuple[list, int]:
         # note: "notifications/initialized" deliberately not sent — some local
         # servers (e.g. patched crawl4ai-mcp) close stdout on unknown messages.
         _send(p.stdin, {"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
-        result = _read_result(p.stdout, 2)
-        ms = int((time.monotonic() - t0) * 1000)
-        return result.get("tools") or [], ms
+        return (_read_result(p.stdout, 2)).get("tools") or []
     finally:
         watchdog.cancel()
         try:
@@ -122,7 +122,7 @@ def stdio_tools_sync(cfg: dict, timeout: float) -> tuple[list, int]:
             p.wait()
 
 
-def http_tools_sync(cfg: dict, timeout: float) -> tuple[list, int]:
+def http_tools_sync(cfg: dict, timeout: float) -> list:
     headers = {"Content-Type": "application/json", "Accept": "application/json",
                **{k: v for k, v in (cfg.get("headers") or {}).items()}}
     url = cfg.get("url", "")
@@ -132,7 +132,6 @@ def http_tools_sync(cfg: dict, timeout: float) -> tuple[list, int]:
             if exp == v:
                 raise RuntimeError(f"env var not set for header '{k}'")
             headers[k] = exp
-    t0 = time.monotonic()
 
     def post(payload: dict) -> dict:
         r = urllib.request.Request(url, data=json.dumps(payload).encode(), headers=headers)
@@ -146,32 +145,67 @@ def http_tools_sync(cfg: dict, timeout: float) -> tuple[list, int]:
     res2 = post({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
     if "error" in res2:
         raise RuntimeError(str(res2["error"].get("message", "rpc error"))[:120])
-    return (res2.get("result") or {}).get("tools") or [], int((time.monotonic() - t0) * 1000)
+    return (res2.get("result") or {}).get("tools") or []
 
 
-def measure_sync(label: str, name: str, cfg: dict, timeout: float) -> dict:
-    row = {"harness": label, "server": name}
+def measure_sync(name: str, cfg: dict, timeout: float) -> dict:
+    row: dict = {"server": name}
     try:
         if cfg.get("type") == "http":
-            tools, ms = http_tools_sync(cfg, timeout)
+            tools = http_tools_sync(cfg, timeout)
         else:
-            tools, ms = stdio_tools_sync(cfg, timeout)
+            tools = stdio_tools_sync(cfg, timeout)
         payload = json.dumps(
             [{"name": t.get("name", ""), "description": t.get("description") or "",
               "inputSchema": t.get("inputSchema") or {}} for t in sorted(tools, key=lambda x: x.get("name", ""))],
             separators=(",", ":"), sort_keys=True).encode()
         n, approx = toks(payload)
-        descs = [len((t.get("description") or "").encode()) for t in tools]
-        row.update({"tools": len(tools), "bytes": len(payload), "kb": round(len(payload) / 1024, 1),
-                    "tokens": n, "tokens_approx": approx, "cold_ms": ms,
-                    "desc_avg": sum(descs) // max(len(descs), 1)})
+        row.update({"tools": len(tools), "bytes": len(payload), "tokens": n,
+                    "tokens_approx": approx})
     except Exception as e:
         row["error"] = f"{type(e).__name__}: {e}"[:160]
     return row
 
 
+def mine_usage(server_names: list[str], sessions_dirs: list[Path]) -> dict[str, dict]:
+    """Count actual MCP tool invocations per server across harness session logs.
+
+    Matches `mcp__<server>_` / `mcp__<server>__` prefixes against known server
+    names (omp routes MCP through xd:// writes, claude through mcp__ toolCalls —
+    both contain the prefix as a substring)."""
+    out = {n: {"calls": 0, "last_used": None} for n in server_names}
+    frags = {f"mcp__{n}_": n for n in server_names}
+    files: list[Path] = []
+    for d in sessions_dirs:
+        if d.exists():
+            files.extend(d.rglob("*.jsonl"))
+    for jf in files:
+        try:
+            fh = jf.open(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        with fh:
+            for line in fh:
+                if "mcp__" not in line:
+                    continue
+                ts = None
+                m = re.search(r'"timestamp":\s*"([^"]+)"', line)
+                if m:
+                    ts = m.group(1)[:10]
+                hit = None
+                for frag, name in frags.items():
+                    if frag in line:
+                        hit = name
+                        break
+                if hit:
+                    out[hit]["calls"] += 1
+                    if ts and (out[hit]["last_used"] is None or ts > out[hit]["last_used"]):
+                        out[hit]["last_used"] = ts
+    return out
+
+
 async def amain(args: argparse.Namespace) -> int:
-    jobs = []
+    jobs, registry = [], {}
     for label, path in discover_configs(args.config):
         try:
             servers = load_servers(label, path)
@@ -179,19 +213,33 @@ async def amain(args: argparse.Namespace) -> int:
             print(f"[{label}] config parse error: {e}", file=sys.stderr)
             continue
         for name, cfg in servers.items():
-            jobs.append(asyncio.to_thread(measure_sync, label, name, cfg, args.timeout))
+            registry.setdefault(name, []).append(label)
+            if len(registry[name]) == 1:  # measure each unique server once
+                jobs.append(asyncio.to_thread(measure_sync, name, cfg, args.timeout))
     rows = list(await asyncio.gather(*jobs)) if jobs else []
-    rows.sort(key=lambda r: (r.get("harness", ""), -(r.get("bytes") or 0)))
+    usage = mine_usage(sorted(registry),
+                       [Path(p) for p in (args.sessions or
+                                          [str(HOME / ".omp/agent/sessions")] +
+                                          [str(p) for p in HOME.glob(".omp/profiles/*/agent/sessions")])])
+    for r in rows:
+        r["harnesses"] = ",".join(sorted(registry.get(r["server"], [])))
+        u = usage.get(r["server"])
+        if u:
+            r["calls"] = u["calls"]
+            r["last_used"] = u["last_used"]
+    rows.sort(key=lambda r: -(r.get("bytes") or 0))
 
-    print("| harness | server | tools | schema | tokens | cold ms |")
-    print("|---|---|---:|---:|---:|---:|")
+    print("| server | harnesses | tools | bytes | tokens | calls | last used |")
+    print("|---|---|---:|---:|---:|---:|---|")
     ok = 0
     for r in rows:
         if "error" in r:
-            print(f"| {r['harness']} | {r['server']} | ERR | {r['error']} | | |", file=sys.stderr)
+            print(f"| {r['server']} | {r['harnesses']} | ERR | {r['error']} | | | |", file=sys.stderr)
         else:
             mark = "~" if r["tokens_approx"] else ""
-            print(f"| {r['harness']} | {r['server']} | {r['tools']} | {r['kb']} KB | {mark}{r['tokens']:,} | {r['cold_ms']} |")
+            lu = r.get("last_used") or "never"
+            print(f"| {r['server']} | {r['harnesses']} | {r['tools']} | {r['bytes']:,} | "
+                  f"{mark}{r['tokens']:,} | {r.get('calls', 0)} | {lu} |")
             ok += 1
     if rows:
         out = Path(args.out)
@@ -205,12 +253,13 @@ async def amain(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="exuvia MCP footprint meter")
+    ap = argparse.ArgumentParser(description="exuvia MCP footprint + usage meter")
     ap.add_argument("--config", action="append", help="explicit mcp config path (repeatable)")
+    ap.add_argument("--sessions", action="append", default=None,
+                    help="session-log dir to mine for usage (repeatable; replaces defaults)")
     ap.add_argument("--out", default=".exuvia/mcp_footprint.json")
     ap.add_argument("--timeout", type=float, default=30.0)
     return asyncio.run(amain(ap.parse_args()))
-
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -130,16 +130,17 @@ PASS   secrets-verbatim   "redact them" — quoted
 FLAKY  language-default   failed once, passed on retry — reported, not hidden
 ```
 
-**MCP footprint** — what your MCP servers cost every single session, measured live off the wire:
+**MCP footprint + usage** — what your MCP servers cost every session, and whether anything ever calls them. Measured live off the wire, usage mined from session logs:
 
 ```
-| harness    | server     | tools | schema | tokens | cold ms |
-|------------|------------|------:|-------:|-------:|--------:|
-| omp/default | code-index |    14 | 6.4 KB |  1,430 |     442 |
-| omp/default | context7   |     2 | 4.5 KB |    989 |   1,269 |
+| server     | harnesses             | tools |  bytes | tokens | calls | last used  |
+|------------|-----------------------|------:|-------:|-------:|------:|------------|
+| code-index | omp/default,omp/parse |    14 |  6,510 |  1,430 |     0 | never      |
+| crawler    | omp/parse             |     4 |  4,881 |  1,125 |    91 | 2026-09-17 |
+| context7   | omp/default,omp/parse |    2 |  4,596 |    989 |    48 | 2026-09-20 |
 ```
 
-Two tools, a thousand tokens, every session. That's the tax nobody shows you.
+Fourteen tools, 1,430 tokens, every single session, zero invocations ever. That's the tax nobody shows you — now with the number that proves it.
 
 ---
 

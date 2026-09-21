@@ -10,7 +10,7 @@
 - English only. All outputs land in `.exuvia/` inside the audited project.
 - The five invariants (README "What it never does") are the product — any change to them is a semver-major decision.
 - Probes: `claude -p` / `codex exec` / `omp -p` — harness-detected, never hardcoded.
-- meters/mcp_footprint.py: stdio servers via Popen-in-thread (NOT asyncio transports — Windows Proactor spams `__del__`); `cwd` from server config MUST be passed (crawl4ai breaks without it); `notifications/initialized` deliberately not sent (some local servers exit on it); tiktoken optional (fallback bytes/4, marked `~`).
+- meters v0.6: essential metrics only (tools/bytes/tokens + calls/last_used — cold_ms, desc_avg, kb dropped); usage telemetry via session-log mining (`mcp__<server>_` prefix attributed against known server names; omp routes MCP through xd:// writes, claude through mcp__ toolCalls — both contain the prefix). `--sessions` REPLACES defaults (argparse append-with-default pitfall); defaults include ~/.omp/agent/sessions + all profile session dirs. Unique servers measured once, harnesses joined. Audit step 7 semantics: calls=0 or stale last_used → disable candidate backed by a number.
 
 ## Test rig (tests/run.py)
 - T1 deterministic (free): render, installer idempotency, meters, drift statuses, constitution engine via fake harness, blame card. Current: 7/7.

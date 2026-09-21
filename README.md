@@ -6,7 +6,6 @@
 
 **Your agent's instructions rot. Exuvia catches the rot — then PROVES the cleanup lost nothing.**
 
-<a href="https://github.com/Zorgzeleniy/Exuvia/actions/workflows/t1.yml"><img src="https://img.shields.io/github/actions/workflow/status/Zorgzeleniy/Exuvia/t1.yml?style=flat-square&label=T1%20rig" alt="T1 rig"></a>
 <a href="https://github.com/Zorgzeleniy/Exuvia/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT"></a>
 <a href="#-quick-start"><img src="https://img.shields.io/badge/works_with-Claude_Code_·_Codex_·_omp_·_Cursor_·_OpenCode-blue?style=flat-square" alt="5 harnesses"></a>
 <img src="https://img.shields.io/badge/version-0.5.0-orange?style=flat-square" alt="v0.5.0">

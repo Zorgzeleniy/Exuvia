@@ -20,7 +20,7 @@
 
 <div align="center">
 
-**[See it](#-see-it) · [Quick Start](#-quick-start) · [What it catches](#-what-it-catches) · [The Numbers](#-the-numbers) · [Commands](#-commands) · [What it never does](#-what-it-never-does) · [Roadmap](#-roadmap)**
+**[See it](#-see-it) · [Quick Start](#-quick-start) · [What it catches](#-what-it-catches) · [The Numbers](#-the-numbers) · [Commands](#-commands) · [What it never does](#-what-it-never-does) · [License](#-license)**
 
 </div>
 
@@ -227,14 +227,6 @@ The five invariants are the product. Breaking any of them is a semver-major deci
 3. **Never edits without a `.bak-<date>` backup** next to the file.
 4. **Never adds anything of its own.** Apply performs exactly the approved decisions, word for word.
 5. **Never claims a rule survived without a probe.** Verification = a fresh headless session quoting the rule.
-
----
-
-## 🗺️ Roadmap
-
-✅ core audit/apply · ✅ MCP footprint meter · ✅ drift-core · ✅ constitution tests · ✅ blame provenance · ✅ cross-harness translator — **community benchmark (next)** · npm publish (`npx exuvia init`).
-
-The bet: models will soon write clean prompts themselves — but *instruction vs environment vs behavior* reconciliation can't be internalized by any model. Exuvia owns the facts and the feedback loop, not the prose style.
 
 ---
 

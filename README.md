@@ -32,66 +32,79 @@ Every agent accumulates instructions that outlived the truth. Here is a real sec
 
 <table>
 <tr>
-<th width="50%">🪦 Before · 3,362 bytes</th>
-<th width="50%">🐍 After · 1,180 bytes (−65%)</th>
+<th width="50%">🪦 Before · 1,775 bytes</th>
+<th width="50%">🐍 After · 365 bytes (−79%)</th>
 </tr>
 <tr>
 <td valign="top">
 
 ```md
-## Ответы
-- Язык ответа = язык запроса (по умолчанию русский).
-  Формат = формату задачи: код, таблица, список.
-- Наблюдаемое утверждай прямо; ненаблюдаемое помечай [INFERENCE].
+# AGENTS.md
+## Deploys
+- Deploys go through `npm run deploy -- --profile=staging`;
+  the staging gateway answers at 10.0.0.42 (legacy).
 
-## Workflow
-- Многошаговая задача → todo до начала работы. done только
-  с доказательством...
-- Фича/багфикс: сначала падающий тест, потом минимальный код.
-  Продакшн-код без красного теста НЕ сдавать.
-- Ревью диффа → skill://code-review. Security-ревью — хук на Stop.
+## Code style
+- Write clean, readable code and follow best practices.
+- Be careful and thorough when editing files.
+- Always prefer functional, immutable patterns wherever possible.
+- NEVER use `any` in TypeScript files. NEVER disable eslint rules inline.
+- Every function must have a JSDoc comment explaining what it does.
+- Always handle errors explicitly — never swallow exceptions.
 
-## Инструменты — предпочтения
-- read/grep/glob информативнее shell-эквивалентов...
-- Код-интеллект — только lsp; кросс-файловый rename — lsp rename...
-- Codemod → ast_edit; точечная правка → edit; создание → write.
-- Библиотека/фреймворк в задаче → сначала Context7...
+## Git workflow
+- NEVER use the `git stash` command.
+- Always run the full test suite before every commit.
+- Commit messages: conventional commits (feat:, fix:, chore:).
+- Always create a new branch before starting any work.
 
-## Память
-- memory://root — эвристика, не истина...
-- Дurable урок сессии → learn.
+## Testing
+- Aim for at least 80% coverage on all new code.
+- Always write tests first, then implementation (strict TDD, no exceptions).
+- NEVER mock what you don't own.
+
+## Environment
+- Final stack state (2026-01-15): toolchain v2.1 pinned; use the legacy
+  runner until the v3 migration completes.
+- Secrets come from `.env.local` (never committed).
 ```
 
+</td>
 <td valign="top">
 
 ```md
-## Ответы
-- Наблюдаемое утверждай прямо; ненаблюдаемое
-  помечай `[INFERENCE]`.
+# AGENTS.md
+## Deploys
+- Deploys go through `npm run deploy -- --profile=staging`;
+  the staging gateway answers at 10.0.0.99 (migrated 2026-03).
 
-## Workflow
-- Фича/багфикс с новой логикой → сначала падающий тест;
-  мелкая правка — smoke-проверкой.
-- Security-ревью — хук на Stop.
+## Code style
+- NEVER use `any` in TypeScript files. NEVER disable eslint
+  rules inline.
+- Always handle errors explicitly — never swallow exceptions.
 
-## Инструменты
-- Репо-поиск символов → MCP code-index.
+## Git workflow
+- Commit messages: conventional commits (feat:, fix:, chore:).
+- Prefer explicit branches over `git stash`; use stash only to
+  rescue uncommitted noise.
 
-## Среда
-- Windows: python/node/git через PATH, слэши /.
-  Системные пути не трогать без явного запроса.
+## Testing
+- NEVER mock what you don't own.
+
+## Environment
+- Secrets come from `.env.local` (never committed).
 ```
 
 </td>
 </tr>
 </table>
 
-What went away: 15 lines the harness already enforces, one `memory://root` relic from a dead subsystem, four duplicate tool rules. What stayed: every invariant the model couldn't know. And the proof, from a fresh headless session right after the apply:
+What went away: trained duplicates the model does anyway ("best practices", "be careful"), a dated snapshot from January, two always/never rules converted to conditions, and a conflicting gateway IP — updated to the fresh one instead of deleted. What stayed: every invariant the model couldn't know. And the proof, from fresh headless sessions right after the apply:
 
 ```
-P1 secrets   → alive (source: RULES.md)
-P2 TDD       → alive (conditional form)
-P3 tool-preferences → alive (harness covers it, twice)
+P1 secrets    → alive (source: RULES.md) — quoted verbatim by a fresh session
+P2 committing → alive — "explicit request" quoted
+P3 language   → alive — "English by default" quoted
 ```
 
 > Snakes don't shrink. They shed what stopped fitting. Your config should too.

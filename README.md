@@ -63,7 +63,6 @@ Every agent accumulates instructions that outlived the truth. Here is a real `AG
 
 ```
 
-
 **1,775 → 365 bytes (−79%).** What went away: trained duplicates the model does anyway, a dated snapshot from January, always/never rules converted to conditions, and a conflicting gateway IP — updated to the fresh one instead of deleted. What stayed: every fact the model couldn't know on its own. Fresh headless sessions quoted the survivors right after the apply:
 
 ```
@@ -170,7 +169,6 @@ From source instead: `git clone https://github.com/Zorgzeleniy/Exuvia.git && nod
 | **Conflict** | Gateway `10.0.0.42` in AGENTS.md vs `10.0.0.99` in a skill | audit (conflict) + blame (fresher provenance wins) |
 | **Stale fact** | "curl cannot write to disk" — refuted by three other files | drift |
 | **Dead rule** | safety line deleted by a "cleanup" PR | constitution FAIL |
-| **Context tax** | 2 MCP servers costing 2,400 tokens every session | meters |
 | **Lost origin** | "who wrote this rule and why?" | blame: ledger + session-log mining |
 
 ---
@@ -209,6 +207,7 @@ omp / Cursor / OpenCode: the audit skill auto-triggers on *"audit my prompt debt
 In your project, `.exuvia/`: `report.md` + `decisions.md` (audit), `probes-*.md` (apply proof), `ledger.jsonl` (change log), `facts.toml` (drift checklist), `tests/*.toml` (constitution), `mcp_footprint.json` (meters). On your machine: adapters inside each agent's config dir, engines in `~/.exuvia/engines`. Nothing else, nowhere else.
 
 ---
+
 ## 🚫 What it never does
 
 The five invariants are the product. Breaking any of them is a semver-major decision.

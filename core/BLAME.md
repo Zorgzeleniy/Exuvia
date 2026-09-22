@@ -31,13 +31,3 @@ Sources, in order of trust:
 - Pre-exuvia corpora show "(no entry — pre-exuvia history only)" — mine the
   session logs; if they predate logging too, say `unknown origin` honestly.
 
-## Recording into the ledger
-
-Every apply MUST append one ledger line per approved decision:
-
-```json
-{"file": "<abs path>", "marker": "<line fragment>", "written_at": "<iso>",
- "model": "<current model>", "reason": "<audit id or user note>", "action": "deleted|rewritten|kept|merged"}
-```
-
-This is what makes future blames instant and future conflict arbitration mechanical.

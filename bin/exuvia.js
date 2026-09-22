@@ -96,6 +96,7 @@ function installEngines(dry) {
   const dst = path.join(HOME, ".exuvia", "engines");
   let wrote = 0;
   for (const dir of ["meters", "drift", "constitution", "blame", "translate", "core"]) {
+    wrote += copyTree(path.join(ROOT, dir), path.join(dst, dir), dry);
   }
   console.log(`  ${wrote === 0 && !dry ? "=" : dry ? "~" : "+"} engines -> ~/.exuvia/engines (${wrote} file${wrote === 1 ? "" : "s"} changed)`);
 }

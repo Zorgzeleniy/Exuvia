@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tomllib
@@ -50,9 +51,13 @@ def guard_orphaned(t: dict, corpus: Path | None) -> bool:
 
 def run_probe(harness_cmd: str, ask: str, timeout: float) -> str:
     cmd = harness_cmd.replace("{ask}", ask.replace('"', '\\"'))
-    r = subprocess.run(cmd, shell=True, capture_output=True, text=True,
-                       encoding="utf-8", errors="replace", timeout=timeout)
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return f"runner TIMEOUT after {timeout}s"
     return (r.stdout or "") + "\n" + (r.stderr or "")
+
 
 
 def evaluate(answer: str, t: dict) -> tuple[bool, str]:
@@ -83,11 +88,9 @@ def judge(t: dict, harness_cmd: str, corpus: Path | None, timeout: float, retrie
 
 
 def detect_harness() -> str | None:
-    for cmd, probe in [("omp -p", "omp"), ("claude -p", "claude"), ("codex exec", "codex")]:
-        r = subprocess.run(f"{cmd} \"reply OK\"", shell=True, capture_output=True,
-                           text=True, timeout=120)
-        if "OK" in (r.stdout or ""):
-            return f"{cmd} " + '"{ask}"'
+    for binname, cmd in [("omp", "omp -p"), ("claude", "claude -p"), ("codex", "codex exec")]:
+        if shutil.which(binname):
+            return f'{cmd} "{{ask}}"'
     return None
 
 

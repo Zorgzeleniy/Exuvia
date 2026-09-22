@@ -54,6 +54,10 @@ def t1() -> None:
     second = sh(["node", "bin/exuvia.js", "init"])
     check("installer idempotent", first.returncode == 0 and second.returncode == 0
           and " + " not in second.stdout, "second run adds nothing")
+    eng = HOME / ".exuvia/engines/core/AUDIT.md"
+    check("installer deploys engines", eng.exists() and
+          eng.read_text(encoding="utf-8") == (REPO / "core/AUDIT.md").read_text(encoding="utf-8"),
+          str(eng) if eng.exists() else "~/.exuvia/engines missing")
 
     r = sh(["python", "meters/mcp_footprint.py", "--config", "tests/fixture/agent/mcp.json",
             "--sessions", "tests/fixture/blame/sessions",

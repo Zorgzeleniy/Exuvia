@@ -30,7 +30,6 @@
 
 Every agent accumulates instructions that outlived the truth. Here is a real `CLAUDE.md` from a popular 41.6k-star repo, before and after exuvia — as the diff the apply actually produced:
 
-```diff
  # CLAUDE.md
 
 -Tutorial repo. Output is markdown in numbered modules `01-` through `10-`, not an app.

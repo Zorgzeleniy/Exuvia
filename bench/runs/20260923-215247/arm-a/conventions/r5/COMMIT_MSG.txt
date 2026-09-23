@@ -1,0 +1,1 @@
+docs(notes): add project overview and quality gate summary

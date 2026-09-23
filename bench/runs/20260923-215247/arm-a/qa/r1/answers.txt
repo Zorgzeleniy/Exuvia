@@ -1,0 +1,5 @@
+1. Not answerable: the current directory contains no CLAUDE.md, AGENTS.md, or any files at all, so no project commit-message format is defined here.
+2. Not answerable: no standing instruction file (CLAUDE.md / AGENTS.md) exists in this directory to define fenced code block requirements.
+3. Not answerable: no standing instruction file (CLAUDE.md / AGENTS.md) exists in this directory to define internal link path rules.
+4. Not answerable: no standing instruction file (CLAUDE.md / AGENTS.md) exists in this directory to define prohibited-without-request actions.
+5. Not answerable: no standing instruction file (CLAUDE.md / AGENTS.md) exists in this directory to define commit message prohibitions.

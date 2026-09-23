@@ -1,0 +1,5 @@
+1. `type(scope): subject` — scope must match the module folder (e.g. `feat(slash-commands):`, `docs(memory):`, `fix(README):`).
+2. A language (e.g. `bash`, `python`, `json`) — the cross-reference check fails otherwise.
+3. Relative paths (e.g. `01-slash-commands/README.md`); anchors use `#heading-name`.
+4. Commit or push.
+5. `Co-Authored-By: Claude`.

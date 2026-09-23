@@ -1,0 +1,5 @@
+1. type(scope): subject — e.g. feat(slash-commands):, docs(memory):, fix(README):; the scope matches the module folder.
+2. A language — every fenced code block must declare a language (bash, python, json, ...) or the cross-reference check fails.
+3. Relative paths (e.g. 01-slash-commands/README.md); anchors use #heading-name.
+4. Commit or push without explicit user request.
+5. Co-Authored-By: Claude.

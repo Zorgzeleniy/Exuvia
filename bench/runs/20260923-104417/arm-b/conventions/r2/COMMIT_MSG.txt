@@ -1,1 +1,0 @@
-docs(README): add NOTES.md summarizing organization and quality gate

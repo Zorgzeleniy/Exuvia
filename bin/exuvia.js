@@ -78,16 +78,20 @@ function harnesses() {
   ];
 }
 
+function put(dst, content, dry) {
+  if (fs.existsSync(dst) && fs.readFileSync(dst, "utf8") === content) return "same";
+  if (dry) return "dry";
+  fs.mkdirSync(path.dirname(dst), { recursive: true });
+  fs.writeFileSync(dst, content);
+  return "wrote";
+}
+
 function copyTree(src, dst, dry) {
   let wrote = 0;
   for (const e of fs.readdirSync(src, { withFileTypes: true })) {
     const s = path.join(src, e.name), d = path.join(dst, e.name);
     if (e.isDirectory()) wrote += copyTree(s, d, dry);
-    else {
-      if (fs.existsSync(d) && fs.readFileSync(d, "utf8") === fs.readFileSync(s, "utf8")) continue;
-      if (!dry) { fs.mkdirSync(path.dirname(d), { recursive: true }); fs.copyFileSync(s, d); }
-      wrote++;
-    }
+    else if (put(d, fs.readFileSync(s, "utf8"), dry) !== "same") wrote++;
   }
   return wrote;
 }
@@ -119,14 +123,10 @@ function install(dry) {
   if (!list.length) return console.log("No supported harness detected. Nothing to do.");
   for (const h of list) {
     for (const [dest, content] of h.targets) {
-      if (fs.existsSync(dest) && fs.readFileSync(dest, "utf8") === content) {
-        console.log(`  = ${h.name}: up-to-date ${path.relative(HOME, dest)}`);
-        continue;
-      }
-      if (dry) { console.log(`  ~ ${h.name}: would write ${path.relative(HOME, dest)}`); continue; }
-      fs.mkdirSync(path.dirname(dest), { recursive: true });
-      fs.writeFileSync(dest, content);
-      console.log(`  + ${h.name}: wrote ${path.relative(HOME, dest)}`);
+      const rel = path.relative(HOME, dest), r = put(dest, content, dry);
+      if (r === "same") console.log(`  = ${h.name}: up-to-date ${rel}`);
+      else if (r === "dry") console.log(`  ~ ${h.name}: would write ${rel}`);
+      else console.log(`  + ${h.name}: wrote ${rel}`);
     }
   }
   installEngines(dry);

@@ -1,5 +1,0 @@
-1. type(scope): subject — type is one of feat|fix|docs|chore|refactor|test, scope is [a-zA-Z0-9_-]+ (matching the module folder), validated as ^(feat|fix|docs|chore|refactor|test)\([a-zA-Z0-9_-]+\): \S.+
-2. Every fenced code block must declare a language (e.g. bash, python, json) — the cross-reference check fails any fence that does not.
-3. Relative paths (anchors use #heading-name).
-4. Never commit or push without an explicit user request.
-5. The Co-Authored-By: Claude trailer.

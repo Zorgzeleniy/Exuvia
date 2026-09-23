@@ -1,5 +1,0 @@
-1. Not answerable: no CLAUDE.md or AGENTS.md exists in the current directory (it is empty), so no commit message format is specified.
-2. Not answerable: no CLAUDE.md or AGENTS.md exists in the current directory (it is empty), so no fenced-code-block rule is specified.
-3. Not answerable: no CLAUDE.md or AGENTS.md exists in the current directory (it is empty), so no internal-link path convention is specified.
-4. Not answerable: no CLAUDE.md or AGENTS.md exists in the current directory (it is empty), so no explicit-request-only restriction is specified.
-5. Not answerable: no CLAUDE.md or AGENTS.md exists in the current directory (it is empty), so no commit-message prohibition is specified.

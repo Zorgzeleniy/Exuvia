@@ -15,7 +15,7 @@ Never writes configs. Expands ${VAR} header values at runtime, never prints them
 from __future__ import annotations
 
 import argparse
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import re
@@ -204,8 +204,16 @@ def mine_usage(server_names: list[str], sessions_dirs: list[Path]) -> dict[str, 
     return out
 
 
-async def amain(args: argparse.Namespace) -> int:
-    jobs, registry = [], {}
+def main() -> int:
+    ap = argparse.ArgumentParser(description="exuvia MCP footprint + usage meter")
+    ap.add_argument("--config", action="append", help="explicit mcp config path (repeatable)")
+    ap.add_argument("--sessions", action="append", default=None,
+                    help="session-log dir to mine for usage (repeatable; replaces defaults)")
+    ap.add_argument("--out", default=".exuvia/mcp_footprint.json")
+    ap.add_argument("--timeout", type=float, default=30.0)
+    args = ap.parse_args()
+
+    registry, uniq = {}, []
     for label, path in discover_configs(args.config):
         try:
             servers = load_servers(label, path)
@@ -215,8 +223,9 @@ async def amain(args: argparse.Namespace) -> int:
         for name, cfg in servers.items():
             registry.setdefault(name, []).append(label)
             if len(registry[name]) == 1:  # measure each unique server once
-                jobs.append(asyncio.to_thread(measure_sync, name, cfg, args.timeout))
-    rows = list(await asyncio.gather(*jobs)) if jobs else []
+                uniq.append((name, cfg))
+    with ThreadPoolExecutor() as ex:
+        rows = list(ex.map(lambda nc: measure_sync(nc[0], nc[1], args.timeout), uniq))
     usage = mine_usage(sorted(registry),
                        [Path(p) for p in (args.sessions or
                                           [str(HOME / ".omp/agent/sessions")] +
@@ -250,16 +259,6 @@ async def amain(args: argparse.Namespace) -> int:
         tmp.replace(out)  # atomic
     print(f"\n{ok}/{len(rows)} servers measured · json: {args.out}", file=sys.stderr)
     return 0
-
-
-def main() -> int:
-    ap = argparse.ArgumentParser(description="exuvia MCP footprint + usage meter")
-    ap.add_argument("--config", action="append", help="explicit mcp config path (repeatable)")
-    ap.add_argument("--sessions", action="append", default=None,
-                    help="session-log dir to mine for usage (repeatable; replaces defaults)")
-    ap.add_argument("--out", default=".exuvia/mcp_footprint.json")
-    ap.add_argument("--timeout", type=float, default=30.0)
-    return asyncio.run(amain(ap.parse_args()))
 
 if __name__ == "__main__":
     sys.exit(main())

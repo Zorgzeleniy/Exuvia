@@ -6,3 +6,5 @@ tests/**/__pycache__/
 *.tmp
 *.bak-*
 tests/results.log
+bench/runs/*/arm-*/
+bench/runs/20260923-104417/

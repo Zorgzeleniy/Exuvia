@@ -1,1 +1,0 @@
-docs(NOTES): summarize project conventions and quality gate

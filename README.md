@@ -107,9 +107,9 @@ FLAKY  language-default   failed once, passed on retry — reported, not hidden
 ```
 | server     | harnesses             | tools |  bytes | tokens | calls | last used  |
 |------------|-----------------------|------:|-------:|-------:|------:|------------|
-| code-index | omp/default,omp/parse |    14 |  6,510 |  1,430 |     0 | never      |
-| crawler    | omp/parse             |     4 |  4,881 |  1,125 |    91 | 2026-09-17 |
-| context7   | omp/default,omp/parse |    2 |  4,596 |    989 |    48 | 2026-09-20 |
+| code-index | claude code            |    14 |  6,510 |  1,430 |     0 | never      |
+| crawler    | claude code            |     4 |  4,881 |  1,125 |    91 | 2026-09-17 |
+| context7   | claude code            |     2 |  4,596 |    989 |    48 | 2026-09-20 |
 ```
 
 Fourteen tools, 1,430 tokens, every single session, zero invocations ever. That number is the case for disabling it.

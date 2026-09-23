@@ -73,7 +73,8 @@ def verify(task: str, wd: Path) -> tuple[bool, str]:
 
 
 def parse_json_metrics(jsonl: str) -> dict:
-    """Extract aggregated usage from omp --mode=json output."""
+    """Extract aggregated usage from omp --mode=json output.
+    input_tokens is TOTAL input seen by the model: fresh input + cache reads."""
     m = {"input_tokens": 0, "output_tokens": 0, "cache_read": 0,
          "cost_total": 0.0, "turns": 0}
     for line in jsonl.splitlines():
@@ -90,7 +91,7 @@ def parse_json_metrics(jsonl: str) -> dict:
                 continue
             m["turns"] += 1
             u = msg.get("usage") or {}
-            m["input_tokens"] += u.get("input", 0)
+            m["input_tokens"] += u.get("input", 0) + u.get("cacheRead", 0)
             m["output_tokens"] += u.get("output", 0)
             m["cache_read"] += u.get("cacheRead", 0)
             m["cost_total"] += (u.get("cost") or {}).get("total", 0.0)
@@ -137,8 +138,8 @@ def aggregate(rows: list[dict]) -> list[dict]:
 
 def render_results(agg: list[dict], raw: list[dict]) -> str:
     lines = ["# Shed-Bench Results", "",
-             "| arm | task | pass | wall (med) | tok in | tok out | cache | cost $ | turns |",
-             "|---|---|---|---:|---:|---:|---:|---:|---:|"]
+             "| arm | task | pass | wall (med) | tok in (incl cache) | tok out | cache | cost $ | turns |",
+             "|---|---|---:|---:|---:|---:|---:|---:|---:|"]
     for a in agg:
         lines.append(
             f"| {a['arm']} | {a['task']} | {a['pass_rate']:.0%} | "
@@ -162,7 +163,7 @@ def render_results(agg: list[dict], raw: list[dict]) -> str:
                 return fmt.format((vb - va) / va * 100)
             lines.append(f"| {t} | {delta('wall_med')} | {delta('tok_in_med')} | "
                          f"{delta('tok_out_med')} | {delta('cost_med', '{:+.1f}%')} |")
-    lines += ["", f"_Generated {time.strftime('%Y-%m-%d %H:%M')} · {len(raw)} runs total_"]
+    lines += ["", f"_Generated {time.strftime('%Y-%m-%d %H:%M')} · {len(raw)} runs total · model {raw[0].get('model', '?') if raw else '?'} · tok in = fresh input + cache reads_"]
     return "\n".join(lines) + "\n"
 
 
@@ -170,7 +171,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="exuvia shed-bench v2")
     ap.add_argument("--arm-a", required=True)
     ap.add_argument("--arm-b", default=None)
-    ap.add_argument("--repeats", type=int, default=3)
+    ap.add_argument("--repeats", type=int, default=5)
     ap.add_argument("--model", default="zai/glm-5.3-flash:high")
     ap.add_argument("--tasks", nargs="*", default=TASKS)
     ap.add_argument("--setup-only", action="store_true")
@@ -195,6 +196,7 @@ def main() -> int:
             for rep in range(1, a.repeats + 1):
                 row = run_arm_task(prof_name, task, rep, runs_dir / f"arm-{k}")
                 row["arm"] = k
+                row["model"] = a.model
                 rows.append(row)
                 print(f"  arm {k} · {task} · r{rep}: {'PASS' if row['pass'] else 'FAIL'} "
                       f"({row['wall_s']}s, {row['input_tokens']:,}→{row['output_tokens']:,} tok, "
@@ -205,7 +207,7 @@ def main() -> int:
     out_md.parent.mkdir(parents=True, exist_ok=True)
     out_md.write_text(render_results(agg, rows), encoding="utf-8")
     (runs_dir / "results.json").write_text(
-        json.dumps({"aggregate": agg, "raw": rows}, indent=1), encoding="utf-8")
+        json.dumps({"model": a.model, "repeats": a.repeats, "aggregate": agg, "raw": rows}, indent=1), encoding="utf-8")
     sh([sys.executable, str(REPO / "render/report.py"), "--md", str(out_md),
         "--out", str(runs_dir / "results.html")])
     print(f"\nresults: {out_md} (+html)")

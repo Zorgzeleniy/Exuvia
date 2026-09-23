@@ -1,0 +1,5 @@
+name = "julep-v1"
+origin = "julep-ai/julep AGENTS.md (real file from the arXiv 2606.15828 smells-corpus of 100 popular repos)"
+url = "https://github.com/julep-ai/julep"
+source = "doi.org/10.5281/zenodo.20600327 (dataset snapshot)"
+description = "Generic-rot demo: golden-rules ALWAYS/NEVER table, step-by-step AI workflow, meta advice, duplicated standards"

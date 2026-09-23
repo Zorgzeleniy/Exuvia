@@ -28,52 +28,48 @@
 
 ## 🐍 See it
 
-Every agent accumulates instructions that outlived the truth. Here is a real `CLAUDE.md` from a popular 41.6k-star repo, before and after exuvia — as the diff the apply actually produced:
+Every agent accumulates instructions that outlived the truth. Here is a real `AGENTS.md` from an open-source repo — one of the 100 popular configs in the first academic AGENTS.md smells corpus ([arXiv 2606.15828](https://arxiv.org/abs/2606.15828)) — before and after exuvia, as the diff the apply actually produced:
 
 ```
-# CLAUDE.md
+# AGENTS.md. Julep AI
+-
+-*Last updated 2025-05-09*
+-
+-- **src/ts-api**: Core service for agent definitions and task execution
+  (stale — every other section calls it src/agents-api)
+-
+-**Naming**: `snake_case` (functions/variables), `PascalCase` (classes), `SCREAMING_SNAKE` (constants).
+-*   **Error Handling**: Typed exceptions; context managers for resources.
+-*   **Documentation**: Google-style docstrings for public functions/classes.
+-
+-## AI Assistant Workflow: Step-by-Step Methodology
+-
+-1. **Consult Relevant Guidance**: consult the relevant instructions from `AGENTS.md` files...
+-2. **Clarify Ambiguities**: ...ask the user targeted questions before proceeding.
+-3. **Break Down & Plan**: chalk out a rough plan, referencing project conventions and best practices.
+-6. **Track Progress**: Use a to-do list to keep track of your progress...
+-9. **User Review**: After completing the task, ask the user to review what you have done.
+-
+-## 15. Meta: Guidelines for updating AGENTS.md
+-
+-1. **Decision flowchart**: A simple decision tree for "when to use X vs Y"...
+-3. **Tabular format for key facts**: The tables are very helpful - more structured data...
+-
+-*   **Review AI-generated code**: Never merge code you don't understand.
 
--Tutorial repo. Output is markdown in numbered modules `01-` through `10-`, not an app.
--Scripts in `scripts/` exist only to validate docs and build the EPUB.
--
--See also `.claude/CLAUDE.md` for stack/commands and `STYLE_GUIDE.md` for lesson structure.
--
--## Critical commands
--
--```bash
--# Quality gate (also runs on commit via pre-commit hooks)
--pre-commit run --all-files
--
--# Tests
--pytest scripts/tests/ -v
--
--# EPUB build (renders Mermaid with the local mmdc CLI — no network, needs mmdc on PATH)
--uv run scripts/build_epub.py
--
--# Python tooling
--ruff check scripts/ && ruff format scripts/
--mypy scripts/ --ignore-missing-imports
--bandit -c scripts/pyproject.toml -r scripts/ --exclude scripts/tests/
--```
--
--## Architecture map
--
--- `01-` … `10-` — tutorial modules. **Numbered prefix = learning order**, not alphabetical. Do not reorganize.
--- Each module: `README.md` + copy-paste templates (`.md`, `.json`, `.sh`).
--- `scripts/` — utilities (EPUB builder, link/mermaid/cross-ref validators). Not the product.
--- `02-memory/*.md` — CLAUDE.md templates users copy into their own projects. Don't confuse with this file.
--- `openspec/` — spec-driven change proposals.
--
- ## Hard rules
+ ## Golden rules
 
- - **YOU MUST NOT commit or push without explicit user request.**
++ When unsure about implementation details or requirements — ask the developer before making changes.
++ Generate code only inside the relevant component's source directories; never touch `tests/`, `SPEC.md`, `*_spec.py`, `*.ward`.
++ For changes >300 LOC or >3 files, ask for confirmation before starting.
+```
+
+**19,342 → 4,288 bytes (−78%).** What went away: a ten-step "AI assistant workflow" the model runs anyway, meta-advice the file gave to its own authors, naming and error-handling conventions any model knows, a stale component map, a golden rule stated twice. What stayed: every golden rule and safety gate, the `poe` commands, the TypeSpec/ward/domain specifics, the AIDEV anchor ritual. And in the [A/B benchmark](#-the-numbers), a cleaned corpus cut **non-cached** input tokens **−87%** on the first task while cutting total cost **−26%** — quality flat.
 
 ```
-**3,577 → 1,561 bytes (−56%).** What went away: an architecture map for a repo that doesn't exist here (8 dead path references), commands that can't run, trained duplicates the model does anyway. What stayed: every hard rule, every safety invariant, every workflow preference. And in the [A/B benchmark](#-the-numbers), the cleaned corpus cut **non-cached** input tokens **−87%** on the first task while cutting total cost **−26%** — quality flat.
-
-```
-P1 committing → alive — "MUST NOT commit or push without explicit user request" quoted
-P2 markdown  → alive — "code fences must declare a language" quoted
+P1 generated   → alive — "Never manually edit generated files (`autogen/`) — they get overwritten" quoted
+P2 big changes → alive — ">300 LOC or >3 files — ask for confirmation before starting" quoted
+P3 AIDEV       → alive — "AIDEV-NOTE / AIDEV-TODO / AIDEV-QUESTION, ≤120 chars" quoted
 ```
 
 > **What's a probe?** The whole proof mechanism, in three sentences. Exuvia opens a brand-new agent session in the background — no chat, just a question — and asks it to quote a rule ("what are your directives about secrets?"). If the fresh session still quotes the rule, the rule is alive, no matter which file it lives in. That's a probe; every "alive" above is one.

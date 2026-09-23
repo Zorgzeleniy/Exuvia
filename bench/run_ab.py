@@ -32,8 +32,8 @@ def setup_profile(name: str, corpus: Path, model: str) -> Path:
     if prof.parent.exists():
         shutil.rmtree(prof.parent)
     (prof / "skills").mkdir(parents=True)
-    src_md = corpus / "CLAUDE.md"
-    if src_md.exists():
+    src_md = next((corpus / n for n in ("CLAUDE.md", "AGENTS.md") if (corpus / n).exists()), None)
+    if src_md is not None:
         (prof / "AGENTS.md").write_text(src_md.read_text(encoding="utf-8"), encoding="utf-8")
     for d in sorted(set(corpus.glob("*skills*")) | set(corpus.glob("superpowers*")) | set(corpus.glob("*skills*/skills"))):
         if not d.is_dir():

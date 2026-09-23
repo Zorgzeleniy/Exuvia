@@ -30,7 +30,8 @@
 
 Every agent accumulates instructions that outlived the truth. Here is a real `CLAUDE.md` from a popular 41.6k-star repo, before and after exuvia — as the diff the apply actually produced:
 
- # CLAUDE.md
+```
+# CLAUDE.md
 
 -Tutorial repo. Output is markdown in numbered modules `01-` through `10-`, not an app.
 -Scripts in `scripts/` exist only to validate docs and build the EPUB.
@@ -67,6 +68,7 @@ Every agent accumulates instructions that outlived the truth. Here is a real `CL
 
  - **YOU MUST NOT commit or push without explicit user request.**
 
+```
 **3,577 → 1,561 bytes (−56%).** What went away: an architecture map for a repo that doesn't exist here (8 dead path references), commands that can't run, trained duplicates the model does anyway. What stayed: every hard rule, every safety invariant, every workflow preference. And in the [A/B benchmark](#-the-numbers), the cleaned corpus cut input tokens **−95%** on the first task — quality flat.
 
 ```

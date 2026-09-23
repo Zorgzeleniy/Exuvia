@@ -1,6 +1,6 @@
 {
   "name": "exuvia",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Audit and refactor standing AI-agent instructions (AGENTS.md/CLAUDE.md/skills/MCP) for prompt debt — probe-verified, safety-preserving; drift checks with MCP usage telemetry, constitution tests, blame provenance, cross-harness translator",
   "license": "MIT",
   "author": "Zorgzeleniy",

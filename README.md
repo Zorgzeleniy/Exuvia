@@ -69,7 +69,7 @@ Every agent accumulates instructions that outlived the truth. Here is a real `CL
  - **YOU MUST NOT commit or push without explicit user request.**
 
 ```
-**3,577 → 1,561 bytes (−56%).** What went away: an architecture map for a repo that doesn't exist here (8 dead path references), commands that can't run, trained duplicates the model does anyway. What stayed: every hard rule, every safety invariant, every workflow preference. And in the [A/B benchmark](#-the-numbers), the cleaned corpus cut input tokens **−95%** on the first task — quality flat.
+**3,577 → 1,561 bytes (−56%).** What went away: an architecture map for a repo that doesn't exist here (8 dead path references), commands that can't run, trained duplicates the model does anyway. What stayed: every hard rule, every safety invariant, every workflow preference. And in the [A/B benchmark](#-the-numbers), the cleaned corpus cut **non-cached** input tokens **−87%** on the first task while cutting total cost **−26%** — quality flat.
 
 ```
 P1 committing → alive — "MUST NOT commit or push without explicit user request" quoted
@@ -179,7 +179,7 @@ From this repo. The A/B row is reproducible with `python bench/run_ab.py` (LLM, 
 | What | Measured on | Result |
 |---|---|---|
 | **Real-world cleanup** (maintainer's own harness) | AGENTS.md + skills + MCP | AGENTS.md −65% · 17 low-quality skills removed · MCP surface 4.0k → 2.4k tokens/session |
-| **A/B shed-bench** | real popular config (41.6k★ CLAUDE.md + 23 skills incl. 2 viral) · 4 deterministic tasks × 3 repeats × 2 arms, same model | **−95% input tokens** on the first coding task (64,545 → 3,169 median) · **−63% cost** on that task · **−40% cost** on Q&A · quality flat or better (one task improved 0% → 67%) |
+| **A/B shed-bench** | real popular config (41.6k★ CLAUDE.md + 23 skills incl. 2 viral) · 4 deterministic tasks × 5 repeats × 2 arms, same model | first coding task: **−87% non-cached input** (19,343 → 2,506 tok) · **−26% cost** (with cache reads included the token total is +24% — served at cache price); conventions: **−33% wall · −18% cost**; other tasks flat · quality flat (100/100/100/80% in both arms) · [dual-metric table](./bench/runs/20260923-215247/results.md) |
 | **Translator roundtrip** | omp → neutral intermediate format → omp, probe-checked | first run **caught a line genuinely lost in migration** (2/3 → FAIL); after the fix, 3/3 green |
 
 ---

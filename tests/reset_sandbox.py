@@ -14,6 +14,13 @@ import run  # noqa: E402  (profile_setup lives in the rig)
 
 run.profile_setup()
 
+# funnel-format skill: render straight from core/ (the global ~/.omp copy may
+# lag while the format is under user testing — do not deploy outside the sandbox)
+REPO = Path(__file__).resolve().parent.parent
+tpl = (REPO / "templates/skill.md").read_text(encoding="utf-8")
+body = (tpl.replace("{{AUDIT_BODY}}", (REPO / "core/AUDIT.md").read_text(encoding="utf-8"))
+           .replace("{{APPLY_BODY}}", (REPO / "core/APPLY.md").read_text(encoding="utf-8")))
+(run.PROFILE / "skills/exuvia-audit/SKILL.md").write_text(body, encoding="utf-8")
 src = sqlite3.connect(str(run.HOME / ".omp/agent/agent.db"))
 dst = sqlite3.connect(str(run.PROFILE / "agent.db"))
 with dst:

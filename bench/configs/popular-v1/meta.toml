@@ -1,0 +1,3 @@
+name = "popular-v1"
+origin = "claude-howto CLAUDE.md (MIT, 41.6k stars) + superpowers 15 (MIT) + anthropics 6 (MIT) + viral: caveman (100k stars, MIT skill) + no-ai-slop (10.8k stars, MIT)"
+description = "Realistic popular setup: real instruction file, two popular skill packs, two viral skills with big promises and small/marginal measured gains"

@@ -1,0 +1,5 @@
+1. None is specified. The instruction file defines no exact commit message format; it only states two commit-related prohibitions: never commit or push without an explicit user request, and never add a `Co-Authored-By: Claude` trailer to any commit message.
+2. A language (e.g. bash, python, json) — the cross-reference check fails on code fences without a declared language.
+3. Relative paths (e.g. `01-slash-commands/README.md`); anchors use `#heading-name`.
+4. Commit or push to git — both require an explicit user request.
+5. `Co-Authored-By: Claude`

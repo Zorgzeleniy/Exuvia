@@ -40,10 +40,48 @@ For every inventoried file compute:
 3. **RELIC** — written for an older model, a fixed bug, or a state that no longer exists (cross-check Phase 1, step 5: dates, versions, current environment).
 4. **90%-RULE** — true most of the time but phrased as always/never → candidate for a conditional rewrite. When rewriting, prefer the **bounded-efficiency formulation**: "smallest sufficient change; run the relevant tests; stop when the acceptance criteria pass" — measured neutral-or-better on six models while preserving diagnosis and validation (same paper). Work-ordering phrases from the Phase 1 census are rewrite candidates even when no other smell is present: they buy discarded reasoning branches, not correctness.
 
-## Phase 3 — Report and decisions file
+## Phase 3 — Report and decisions file (funnel format)
 
-1. Write `.exuvia/report.md`: a section per file; rows: id · line (abridged) · category · recommendation · evidence (Phase 1 fact or inference marked `[INFERENCE]`).
-2. Write `.exuvia/decisions.md`: same rows plus an empty `DECISION` column.
-3. Print the summary (counts per category, top-3 findings) and STOP.
+Write `.exuvia/report.md` in the funnel structure — reading order = priority order.
 
-Do not propose a ready rewritten version. The user fills the DECISION column (yes / no / as-condition / keep) — decisions belong to the human.
+**Format contract (binding):**
+- The executive line is a literal template — only the numbers change:
+  `🔴 {N} act now · 🟡 {M} your call · ⚪ {K} fine · corpus {X} KB → shed −{Y}%`
+- Section headers are literals: `## 🔴 Act now` · `## 🟡 Your call` · `## ⚪ Kept safe` · `## Appendix`
+- Row grammar: `| id | line ≤60 chars | why ≤80 chars | → verb |` where **verb comes ONLY from**: `delete · rewrite · keep · disable · merge · verify`
+- The `line` cell quotes the marker VERBATIM from the file (never paraphrase — paraphrase breaks diff-checking and decisions matching)
+- `why` is one line, prefixed `fact:` when it restates a Phase 1 measurement, `[INFERENCE]` when it is judgment
+
+### 1. Executive block (top of the file)
+
+```
+🔴 N act now · 🟡 M your call · ⚪ K fine · corpus X KB → shed −Y%
+```
+
+(`shed` = bytes of delete/rewrite candidates ÷ corpus bytes.) Below it, Top-3 actions: `id · what · the number that makes it matter`, one line each. This block is ALSO your chat summary — paste it verbatim; never write a separate paraphrase.
+
+### 2. Body — grouped by ACTION, not by file
+
+- `## 🔴 Act now` — meter-backed disables and conflicts with direct evidence
+- `## 🟡 Your call` — delete and rewrite candidates
+- `## ⚪ Kept safe` — invariants and safety lines, one line each
+
+Severity is inherited, never invented: 🔴 = meter-backed disable or a conflict with direct contradiction; 🟡 = delete/rewrite candidate; ⚪ = keep. The smell category (relic / trained-dup / 90%-rule / conflict) is a tag inside `why`, never a section.
+
+### 3. Appendix — inventory table + deterministic pre-pass (Phase 0/1 output, as is)
+
+### 4. HTML view (after writing the files)
+
+```
+python <exuvia>/render/report.py --md .exuvia/report.md --out .exuvia/report.html
+```
+
+Tell the user both paths. The HTML is a generated view — never hand-edit it.
+
+### Decisions file
+
+`.exuvia/decisions.md` mirrors the body: same literal headers, same order, same rows, plus an empty `DECISION` column (`yes / no / as-condition / keep`). The user fills it top-down — most important first.
+
+Print the executive block into the chat (verbatim) and STOP.
+
+Do not propose a ready rewritten version. Decisions belong to the human.

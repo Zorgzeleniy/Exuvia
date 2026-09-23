@@ -1,0 +1,46 @@
+[
+ {
+  "task": "qa",
+  "rep": 1,
+  "pass": true,
+  "detail": "PASS: all five answers carry corpus-fact markers",
+  "wall_s": 14,
+  "rc": 0,
+  "turns": 1,
+  "log_bytes": 5441,
+  "arm": "a"
+ },
+ {
+  "task": "qa",
+  "rep": 2,
+  "pass": true,
+  "detail": "PASS: all five answers carry corpus-fact markers",
+  "wall_s": 23,
+  "rc": 0,
+  "turns": 1,
+  "log_bytes": 7761,
+  "arm": "a"
+ },
+ {
+  "task": "qa",
+  "rep": 1,
+  "pass": true,
+  "detail": "PASS: all five answers carry corpus-fact markers",
+  "wall_s": 35,
+  "rc": 0,
+  "turns": 3,
+  "log_bytes": 11918,
+  "arm": "b"
+ },
+ {
+  "task": "qa",
+  "rep": 2,
+  "pass": true,
+  "detail": "PASS: all five answers carry corpus-fact markers",
+  "wall_s": 36,
+  "rc": 0,
+  "turns": 3,
+  "log_bytes": 15110,
+  "arm": "b"
+ }
+]

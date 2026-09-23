@@ -1,0 +1,5 @@
+1. Conventional commits: type(scope): subject — type must be one of feat, fix, docs, chore, refactor, test; scope is lowercase alnum/dash, and a non-empty subject must follow the colon.
+2. A language (e.g. bash, python, json) — every fenced code block must declare its language or the cross-reference check fails.
+3. Relative paths (e.g. 01-slash-commands/README.md); anchors use #heading-name.
+4. Commit or push without explicit user request.
+5. Co-Authored-By: Claude

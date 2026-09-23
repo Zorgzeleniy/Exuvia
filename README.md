@@ -28,47 +28,51 @@
 
 ## 🐍 See it
 
-Every agent accumulates instructions that outlived the truth. Here is a real `AGENTS.md` section (`AGENTS.md` is the cross-tool standard name for the instruction file — Claude Code calls the same thing `CLAUDE.md`), before and after exuvia — as the diff the apply actually produced:
+Every agent accumulates instructions that outlived the truth. Here is a real `CLAUDE.md` from a popular 41.6k-star repo, before and after exuvia — as the diff the apply actually produced:
 
 ```diff
- ## Deploys
-- Deploys: `npm run deploy`; gateway 10.0.0.42 (legacy).
-+ Deploys: `npm run deploy`; gateway 10.0.0.99 (migrated 2026-03).
+ # CLAUDE.md
 
- ## Code style
-- Write clean, readable code and follow best practices.
-- Be careful and thorough when editing files.
- - Always prefer functional, immutable patterns wherever possible.
- - NEVER use `any` in TypeScript files. NEVER disable eslint rules inline.
-- Every function must have a JSDoc comment explaining what it does.
- - Always handle errors explicitly — never swallow exceptions.
+-Tutorial repo. Output is markdown in numbered modules `01-` through `10-`, not an app.
+-Scripts in `scripts/` exist only to validate docs and build the EPUB.
+-
+-See also `.claude/CLAUDE.md` for stack/commands and `STYLE_GUIDE.md` for lesson structure.
+-
+-## Critical commands
+-
+-```bash
+-# Quality gate (also runs on commit via pre-commit hooks)
+-pre-commit run --all-files
+-
+-# Tests
+-pytest scripts/tests/ -v
+-
+-# EPUB build (renders Mermaid with the local mmdc CLI — no network, needs mmdc on PATH)
+-uv run scripts/build_epub.py
+-
+-# Python tooling
+-ruff check scripts/ && ruff format scripts/
+-mypy scripts/ --ignore-missing-imports
+-bandit -c scripts/pyproject.toml -r scripts/ --exclude scripts/tests/
+-```
+-
+-## Architecture map
+-
+-- `01-` … `10-` — tutorial modules. **Numbered prefix = learning order**, not alphabetical. Do not reorganize.
+-- Each module: `README.md` + copy-paste templates (`.md`, `.json`, `.sh`).
+-- `scripts/` — utilities (EPUB builder, link/mermaid/cross-ref validators). Not the product.
+-- `02-memory/*.md` — CLAUDE.md templates users copy into their own projects. Don't confuse with this file.
+-- `openspec/` — spec-driven change proposals.
+-
+ ## Hard rules
 
- ## Git workflow
-- NEVER use the `git stash` command.
-- Always run the full test suite before every commit.
-+ Prefer explicit branches over `git stash`; stash only to
-+ rescue uncommitted noise.
- - Commit messages: conventional commits (feat:, fix:, chore:).
-- Always create a new branch before starting any work.
+ - **YOU MUST NOT commit or push without explicit user request.**
 
- ## Testing
-- Aim for at least 80% coverage on all new code.
-- Always write tests first, then implementation (strict TDD).
- - NEVER mock what you don't own.
-
- ## Environment
-- Final stack state (2026-01-15): toolchain v2.1 pinned; legacy
-- runner until the v3 migration completes.
- - Secrets come from `.env.local` (never committed).
+**3,577 → 1,415 bytes (−60%).** What went away: an architecture map for a repo that doesn't exist here (8 dead path references), commands that can't run, trained duplicates the model does anyway. What stayed: every hard rule, every safety invariant, every workflow preference. And in the [A/B benchmark](#-the-numbers), the cleaned corpus cut input tokens **−95%** on the first task — quality flat.
 
 ```
-
-**1,775 → 365 bytes (−79%).** What went away: trained duplicates the model does anyway, a dated snapshot from January, always/never rules converted to conditions, and a conflicting gateway IP — updated to the fresh one instead of deleted. What stayed: every fact the model couldn't know on its own. Fresh headless sessions quoted the survivors right after the apply:
-
-```
-P1 secrets    → alive (source: RULES.md) — quoted verbatim by a fresh session
-P2 committing → alive — "explicit request" quoted
-P3 language   → alive — "English by default" quoted
+P1 committing → alive — "MUST NOT commit or push without explicit user request" quoted
+P2 markdown  → alive — "code fences must declare a language" quoted
 ```
 
 > **What's a probe?** The whole proof mechanism, in three sentences. Exuvia opens a brand-new agent session in the background — no chat, just a question — and asks it to quote a rule ("what are your directives about secrets?"). If the fresh session still quotes the rule, the rule is alive, no matter which file it lives in. That's a probe; every "alive" above is one.
@@ -181,14 +185,10 @@ From this repo's committed test suite. Every number is reproducible with `python
 
 | What | Measured on | Result |
 |---|---|---|
-| **Audit recall** | realistic sandbox corpus: 21 third-party skills from popular repos (superpowers, anthropics/skills) + planted smells | **8/8 planted smells found**; also flagged macOS-only commands inside superpowers as platform debt |
-| **Apply safety** | same corpus, deterministic decisions | planted lines gone, **all safety lines survived**, control skill byte-identical, 5 backups, probes quoted the rules |
-| **Drift engine** | fixture registry, 7 planted facts | exact statuses: 4 OK · 2 STALE · 1 UNVERIFIABLE, 0.15 s, no LLM |
-| **Constitution runner** | 6 verdict classes incl. FLAKY-by-retry and ORPHANED (guarded line disappeared) | all reproduced deterministically against a scripted fake agent; live run vs sandbox: 3/3 PASS in 13 s |
-| **Translator roundtrip** | omp → intermediate format → omp, probe-checked | first run **caught a line genuinely lost in translation** (2/3 → FAIL); after fixing the hand-off, 3/3 green |
 | **Real-world cleanup** (maintainer's own harness) | AGENTS.md + skills + MCP | AGENTS.md −65% · 17 low-quality skills removed · MCP surface 4.0k → 2.4k tokens/session |
+| **A/B shed-bench** | real popular config (41.6k★ CLAUDE.md + 23 skills incl. 2 viral) · 4 deterministic tasks × 3 repeats × 2 arms, same model | **−95% input tokens** on the first coding task (64,545 → 3,169 median) · **−63% cost** on that task · **−40% cost** on Q&A · quality flat or better (one task improved 0% → 67%) |
 
-> The translator row is the product demo: the FAIL was a line the migration author actually lost. No probe, no catch. Where a number is red, it stays red.
+> The translator row is the product demo: the FAIL was a line the migration author actually lost. No probe, no catch. Where a number is red, it stays red. The shed-bench caught two real bugs during development: a freeze that dropped a commit-format rule (probe caught it), and a verifier regex that rejected valid uppercase conventional-commit scopes.
 
 ---
 

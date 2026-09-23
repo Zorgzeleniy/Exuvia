@@ -1,0 +1,5 @@
+1. None is specified — the instruction files mandate no commit message format; the only commit-message rules are the prohibitions (no committing/pushing without explicit user request, no `Co-Authored-By: Claude`).
+2. A language (e.g. `bash`, `python`, `json`) — the cross-reference check fails otherwise.
+3. Relative paths (e.g. `01-slash-commands/README.md`); anchors use `#heading-name`.
+4. Commit or push.
+5. `Co-Authored-By: Claude`.

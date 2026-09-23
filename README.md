@@ -93,8 +93,7 @@ P2 markdown  → alive — "code fences must declare a language" quoted
 | OK           | deploy-command      | pattern found                         |
 ```
 
-<details>
-<summary><strong>Constitution tests</strong> — rules that exist in the file but stopped <em>binding</em> the model</summary>
+**Constitution tests** — rules that exist in the file but stopped *binding* the model:
 
 ```
 PASS   commit-gate        "NEVER commit… without an explicit request" — quoted by a fresh session
@@ -102,10 +101,7 @@ PASS   secrets-verbatim   "redact them" — quoted
 FLAKY  language-default   failed once, passed on retry — reported, not hidden
 ```
 
-</details>
-
-<details>
-<summary><strong>MCP footprint + usage</strong> — what your MCP servers cost every session, and whether anything ever calls them</summary>
+**MCP footprint + usage** — what your MCP servers cost every session, and whether anything ever calls them:
 
 ```
 | server     | harnesses             | tools |  bytes | tokens | calls | last used  |
@@ -116,8 +112,6 @@ FLAKY  language-default   failed once, passed on retry — reported, not hidden
 ```
 
 Fourteen tools, 1,430 tokens, every single session, zero invocations ever. That number is the case for disabling it.
-
-</details>
 
 ## 🌍 Why this exists
 
@@ -153,8 +147,6 @@ Detects every supported agent on your machine, installs the right adapter into e
 npx exuvia init
 ```
 
-From source instead: `git clone https://github.com/Zorgzeleniy/Exuvia.git && node Exuvia/bin/exuvia.js init`
-
 ### 🕐 The first five minutes
 
 1. **Run the audit.** `/exuvia-audit` (Claude Code, Codex) or just ask *"audit my prompt debt"*. You get a report: every line categorized — invariant / trained-duplicate / relic / 90%-rule / conflict — with a recommendation each.
@@ -187,9 +179,7 @@ From this repo. The A/B row is reproducible with `python bench/run_ab.py` (LLM, 
 |---|---|---|
 | **Real-world cleanup** (maintainer's own harness) | AGENTS.md + skills + MCP | AGENTS.md −65% · 17 low-quality skills removed · MCP surface 4.0k → 2.4k tokens/session |
 | **A/B shed-bench** | real popular config (41.6k★ CLAUDE.md + 23 skills incl. 2 viral) · 4 deterministic tasks × 3 repeats × 2 arms, same model | **−95% input tokens** on the first coding task (64,545 → 3,169 median) · **−63% cost** on that task · **−40% cost** on Q&A · quality flat or better (one task improved 0% → 67%) |
-| **Translator roundtrip** | omp → IR → omp, probe-checked | first run **caught a line genuinely lost in migration** (2/3 → FAIL); after the IR fix, 3/3 green |
-
-> The translator row is the product demo: the FAIL was a line the migration author actually lost. No probe, no catch. Where a number is red, it stays red. The shed-bench caught two real bugs during development: a freeze that dropped a commit-format rule (probe caught it), and a verifier regex that rejected valid uppercase conventional-commit scopes.
+| **Translator roundtrip** | omp → neutral intermediate format → omp, probe-checked | first run **caught a line genuinely lost in migration** (2/3 → FAIL); after the fix, 3/3 green |
 
 ---
 
@@ -208,7 +198,7 @@ omp: all five install as skills and auto-trigger on plain asks (*"audit my promp
 
 ### Where things live
 
-In your project, `.exuvia/`: `report.md` + `decisions.md` (audit), `probes-*.md` (apply proof), `ledger.jsonl` (change log), `facts.toml` (drift checklist), `tests/*.toml` (constitution), `mcp_footprint.json` (meters) — plus the reports each engine emits (`drift-report.md`, `constitution.json`, `report.html`, `ir.jsonl`), all in the same place. On your machine: adapters inside each agent's config dir, engines in `~/.exuvia/engines`. Nothing lands anywhere else.
+In your project, `.exuvia/`: `report.md` + `decisions.md` (audit), `probes-*.md` (apply proof), `ledger.jsonl` (change log), `facts.toml` (drift checklist), `tests/*.toml` (constitution), `mcp_footprint.json` (meters) — plus the reports each engine emits (`drift-report.md`, `constitution.json`, `report.html`, `ir.jsonl` — the intermediate format), all in the same place. On your machine: adapters inside each agent's config dir, engines in `~/.exuvia/engines`. Nothing lands anywhere else.
 
 ---
 
@@ -234,7 +224,6 @@ The five invariants are the product. Breaking any of them is a semver-major deci
 | **instruction corpus** | all your standing instructions together: CLAUDE.md/AGENTS.md, skills, subagent prompts, MCP tool descriptions |
 | **drift** | a standing instruction that no longer matches the actual machine (path moved, tool updated, port closed) |
 | **ledger** | a local change log exuvia keeps: who wrote/changed which line, when, and why |
-| **meters / engines** | the deterministic python parts (no LLM): measurement, drift checks, blame mining; live in `~/.exuvia/engines` |
 | **omp** | Oh My Pi — an open-source terminal coding agent, one of the five supported tools |
 | **headless session** | an agent run with no interactive chat — a question in, an answer out, used for probes |
 

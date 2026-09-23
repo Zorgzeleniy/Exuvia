@@ -28,43 +28,80 @@
 
 ## 🐍 See it
 
-Every agent accumulates instructions that outlived the truth. Here is a real `AGENTS.md` from an open-source repo — one of the 100 popular configs in the first academic AGENTS.md smells corpus ([arXiv 2606.15828](https://arxiv.org/abs/2606.15828)) — before and after exuvia, as the diff the apply actually produced:
+Every agent accumulates instructions that outlived the truth. Here is a real `AGENTS.md` from an open-source repo — one of the 100 popular configs in the first academic AGENTS.md smells corpus ([arXiv 2606.15828](https://arxiv.org/abs/2606.15828)) — before and after exuvia, verbatim excerpts of what the apply actually produced:
+
+**Before** — 19,342 bytes, verbatim excerpts:
 
 ```
 # AGENTS.md. Julep AI
--
--*Last updated 2025-05-09*
--
--- **src/ts-api**: Core service for agent definitions and task execution
-  (stale — every other section calls it src/agents-api)
--
--**Naming**: `snake_case` (functions/variables), `PascalCase` (classes), `SCREAMING_SNAKE` (constants).
--*   **Error Handling**: Typed exceptions; context managers for resources.
--*   **Documentation**: Google-style docstrings for public functions/classes.
--
--## AI Assistant Workflow: Step-by-Step Methodology
--
--1. **Consult Relevant Guidance**: consult the relevant instructions from `AGENTS.md` files...
--2. **Clarify Ambiguities**: ...ask the user targeted questions before proceeding.
--3. **Break Down & Plan**: chalk out a rough plan, referencing project conventions and best practices.
--6. **Track Progress**: Use a to-do list to keep track of your progress...
--9. **User Review**: After completing the task, ask the user to review what you have done.
--
--## 15. Meta: Guidelines for updating AGENTS.md
--
--1. **Decision flowchart**: A simple decision tree for "when to use X vs Y"...
--3. **Tabular format for key facts**: The tables are very helpful - more structured data...
--
--*   **Review AI-generated code**: Never merge code you don't understand.
+*Last updated 2025-05-09*
 
- ## Golden rules
+## AI Assistant Workflow: Step-by-Step Methodology
 
-+ When unsure about implementation details or requirements — ask the developer before making changes.
-+ Generate code only inside the relevant component's source directories; never touch `tests/`, `SPEC.md`, `*_spec.py`, `*.ward`.
-+ For changes >300 LOC or >3 files, ask for confirmation before starting.
+When responding to user instructions, the AI assistant (Claude, Cursor, GPT, etc.)
+should follow this process to ensure clarity, correctness, and maintainability:
+
+1. **Consult Relevant Guidance**: When the user gives an instruction, consult the
+   relevant instructions from `AGENTS.md` files (both root and directory-specific).
+2. **Clarify Ambiguities**: Based on what you could gather, see if there's any need
+   for clarifications. If so, ask the user targeted questions before proceeding.
+3. **Break Down & Plan**: Break down the task at hand and chalk out a rough plan
+   for carrying it out, referencing project conventions and best practices.
+6. **Track Progress**: Use a to-do list (internally, or optionally in a `TODOS.md`
+   file) to keep track of your progress on multi-step or complex tasks.
+9. **User Review**: After completing the task, ask the user to review what you
+   have done, and repeat the process as needed.
+
+## 15. Meta: Guidelines for updating AGENTS.md
+
+1. **Decision flowchart**: A simple decision tree for "when to use X vs Y" for key
+   architectural choices would guide my recommendations.
+3. **Tabular format for key facts**: The tables are very helpful - more structured
+   data in tabular format would be valuable.
+
+## 3. Coding standards
+
+*   **Naming**: `snake_case` (functions/variables), `PascalCase` (classes),
+    `SCREAMING_SNAKE` (constants).
+*   **Error Handling**: Typed exceptions; context managers for resources.
+
+## 0. Project overview
+- **src/ts-api**: Core service for agent definitions and task execution
 ```
 
-**19,342 → 4,288 bytes (−78%).** What went away: a ten-step "AI assistant workflow" the model runs anyway, meta-advice the file gave to its own authors, naming and error-handling conventions any model knows, a stale component map, a golden rule stated twice. What stayed: every golden rule and safety gate, the `poe` commands, the TypeSpec/ward/domain specifics, the AIDEV anchor ritual. And in the [A/B benchmark](#-the-numbers), a cleaned corpus cut **non-cached** input tokens **−87%** on the first task while cutting total cost **−26%** — quality flat.
+The step-by-step workflow the model runs anyway, meta-advice the file gives to its own authors, naming conventions any model knows — and `src/ts-api`, a component the rest of the file calls `agents-api`.
+
+**After** — 4,288 bytes, verbatim excerpts:
+
+```
+# AGENTS.md — Julep AI
+
+## Golden rules
+
+- When unsure about implementation details or requirements — ask the developer
+  before making changes. Never guess project-specific decisions.
+- Generate code only inside the relevant component's source directories (or
+  explicitly pointed files). Never touch `tests/`, `SPEC.md`, `*_spec.py`, `*.ward`
+  — humans own tests & specs.
+- For changes >300 LOC or >3 files, ask for confirmation before starting.
+- Never modify `.agentignore` / `.agentindexignore` without explicit permission.
+
+## Commands
+
+poe format    # ruff format
+poe test      # ward test --exclude .venv (pytest for integrations-service)
+…
+
+## AIDEV anchors
+
+- Add `AIDEV-NOTE:` / `AIDEV-TODO:` / `AIDEV-QUESTION:` comments (≤120 chars)
+  near non-trivial code: long, complex, important, confusing, or bug-adjacent.
+- Never remove `AIDEV-NOTE`s without explicit human instruction.
+```
+
+Every golden rule, every safety gate, every working command, the TypeSpec and ward specifics, the AIDEV ritual — all still there, deduplicated.
+
+**19,342 → 4,288 bytes (−78%).** And in the [A/B benchmark](#-the-numbers), a cleaned corpus cut **non-cached** input tokens **−87%** on the first task while cutting total cost **−26%** — quality flat.
 
 ```
 P1 generated   → alive — "Never manually edit generated files (`autogen/`) — they get overwritten" quoted

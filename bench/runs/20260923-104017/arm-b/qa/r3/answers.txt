@@ -1,5 +1,0 @@
-1. No specific commit message format is prescribed; the only commit-message rule is that every commit message must not contain a Co-Authored-By: Claude trailer (and commits/pushes themselves require explicit user request).
-2. Every fenced code block in markdown must declare a language (e.g. bash, python, json) — the cross-reference check fails otherwise.
-3. Internal links use relative paths (e.g. 01-slash-commands/README.md); anchors use #heading-name.
-4. You must not commit or push without explicit user request.
-5. You must not add "Co-Authored-By: Claude" to any commit message.

@@ -20,7 +20,7 @@
 
 <div align="center">
 
-**[See it](#-see-it) · [Quick Start](#-quick-start) · [What it catches](#-what-it-catches) · [The Numbers](#-the-numbers) · [Commands](#-commands) · [What it never does](#-what-it-never-does) · [Glossary](#-words-we-use) · [License](#-license)**
+**[See it](#-see-it) · [Quick Start](#-quick-start) · [What it catches](#-what-it-catches) · [The Numbers](#-the-numbers) · [Commands](#commands) · [What it never does](#-what-it-never-does) · [Glossary](#-words-we-use) · [License](#-license)**
 
 </div>
 
@@ -68,7 +68,7 @@ Every agent accumulates instructions that outlived the truth. Here is a real `CL
 
  - **YOU MUST NOT commit or push without explicit user request.**
 
-**3,577 → 1,415 bytes (−60%).** What went away: an architecture map for a repo that doesn't exist here (8 dead path references), commands that can't run, trained duplicates the model does anyway. What stayed: every hard rule, every safety invariant, every workflow preference. And in the [A/B benchmark](#-the-numbers), the cleaned corpus cut input tokens **−95%** on the first task — quality flat.
+**3,577 → 1,561 bytes (−56%).** What went away: an architecture map for a repo that doesn't exist here (8 dead path references), commands that can't run, trained duplicates the model does anyway. What stayed: every hard rule, every safety invariant, every workflow preference. And in the [A/B benchmark](#-the-numbers), the cleaned corpus cut input tokens **−95%** on the first task — quality flat.
 
 ```
 P1 committing → alive — "MUST NOT commit or push without explicit user request" quoted
@@ -127,7 +127,7 @@ Meanwhile your `CLAUDE.md`, skills, subagents and MCP configs keep growing. Ever
 
 Linters see file structure. Exuvia sees the loop: **what the instructions claim vs what the machine says vs what the model actually does** — and closes all three gaps with evidence, not vibes. The taxonomy matches the first academic catalog of AGENTS.md smells ([arXiv 2606.15828](https://arxiv.org/abs/2606.15828)).
 
-A preregistered 4,644-run study put numbers on the mechanism ([arXiv 2608.01347](https://arxiv.org/abs/2608.01347)): prompt **length** is nearly free — verbose repetition measures ~1.0× — while phrases that **order extra work** are not. "Compare several approaches" multiplies reasoning 2.4–7.4× and buys ~3 elaborated-but-discarded branches per task; certainty language ("make absolutely sure") escalates into verification loops up to 18× the clean-run cost with zero success gain. The most dangerous line in your config isn't the verbose one — it's the *plausible wrong hint*: a confident stale fact raised reasoning 2.61× and cut success, while irrelevant noise measured nearly free. And the harness amplifies all of it: a heavy standing prefix replays those consequences every single turn.
+A preregistered 4,643-run study put numbers on the mechanism ([arXiv 2608.01347](https://arxiv.org/abs/2608.01347)): prompt **length** is nearly free — verbose repetition measures ~1.0× — while phrases that **order extra work** are not. "Compare several approaches" multiplies reasoning 2.4–7.4× at zero correctness gain; certainty language ("make absolutely sure") inflates output up to 4.1×, buying re-verification loops, not success. The most dangerous line in your config isn't the verbose one — it's the *plausible wrong hint*: misleading architectural hints raised reasoning 2.61× — the costliest input defect measured — while irrelevant noise measured nearly free (1.03×). And the harness amplifies all of it: a heavy standing prefix replays those consequences every single turn.
 
 ---
 
@@ -181,12 +181,13 @@ From source instead: `git clone https://github.com/Zorgzeleniy/Exuvia.git && nod
 
 ## 📊 The Numbers
 
-From this repo's committed test suite. Every number is reproducible with `python tests/run.py --t1` (free, seconds) and `--t2` (LLM, ~20 min).
+From this repo. The A/B row is reproducible with `python bench/run_ab.py` (LLM, ~30 min); the suite itself is `python tests/run.py --t1` (free, seconds) and `--t2` (LLM, ~20 min).
 
 | What | Measured on | Result |
 |---|---|---|
 | **Real-world cleanup** (maintainer's own harness) | AGENTS.md + skills + MCP | AGENTS.md −65% · 17 low-quality skills removed · MCP surface 4.0k → 2.4k tokens/session |
 | **A/B shed-bench** | real popular config (41.6k★ CLAUDE.md + 23 skills incl. 2 viral) · 4 deterministic tasks × 3 repeats × 2 arms, same model | **−95% input tokens** on the first coding task (64,545 → 3,169 median) · **−63% cost** on that task · **−40% cost** on Q&A · quality flat or better (one task improved 0% → 67%) |
+| **Translator roundtrip** | omp → IR → omp, probe-checked | first run **caught a line genuinely lost in migration** (2/3 → FAIL); after the IR fix, 3/3 green |
 
 > The translator row is the product demo: the FAIL was a line the migration author actually lost. No probe, no catch. Where a number is red, it stays red. The shed-bench caught two real bugs during development: a freeze that dropped a commit-format rule (probe caught it), and a verifier regex that rejected valid uppercase conventional-commit scopes.
 
@@ -201,12 +202,13 @@ From this repo's committed test suite. Every number is reproducible with `python
 | `/exuvia-drift` | facts-vs-environment diff: which standing facts are STALE |
 | `/exuvia-test` | constitution tests: prove rules are LIVE in fresh sessions |
 | `/exuvia-translate` | migrate the corpus between harnesses (omp↔Claude↔Codex↔Cursor), probe-checked equivalence |
+| `/exuvia-blame` | provenance for any instruction line: ledger + session-log mining — who wrote it, when, why |
 
-omp / Cursor / OpenCode: the audit skill auto-triggers on *"audit my prompt debt"* — it wakes when you ask for an audit, never on its own; drift/constitution/blame/translate install as skills too. Engines: `~/.exuvia/engines` (python stdlib, zero dependencies).
+omp: all five install as skills and auto-trigger on plain asks (*"audit my prompt debt"*) — they wake when you ask, never on their own. Cursor / OpenCode: a single audit adapter (audit + apply). Engines: `~/.exuvia/engines` (python stdlib, zero dependencies).
 
 ### Where things live
 
-In your project, `.exuvia/`: `report.md` + `decisions.md` (audit), `probes-*.md` (apply proof), `ledger.jsonl` (change log), `facts.toml` (drift checklist), `tests/*.toml` (constitution), `mcp_footprint.json` (meters). On your machine: adapters inside each agent's config dir, engines in `~/.exuvia/engines`. Nothing else, nowhere else.
+In your project, `.exuvia/`: `report.md` + `decisions.md` (audit), `probes-*.md` (apply proof), `ledger.jsonl` (change log), `facts.toml` (drift checklist), `tests/*.toml` (constitution), `mcp_footprint.json` (meters) — plus the reports each engine emits (`drift-report.md`, `constitution.json`, `report.html`, `ir.jsonl`), all in the same place. On your machine: adapters inside each agent's config dir, engines in `~/.exuvia/engines`. Nothing lands anywhere else.
 
 ---
 

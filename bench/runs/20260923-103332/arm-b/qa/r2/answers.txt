@@ -1,5 +1,0 @@
-1. Conventional Commits: type(scope): subject — type must be one of feat, fix, docs, chore, refactor, test, followed by a lowercase scope in parentheses, then a non-empty subject (e.g. feat(auth): add login).
-2. A language (fenced code blocks must declare a language, e.g. ```bash, ```python, ```json).
-3. Relative paths (e.g. 01-slash-commands/README.md; anchors use #heading-name).
-4. Commit or push (never commit or push without explicit user request).
-5. Co-Authored-By: Claude (must never be added to a commit message).

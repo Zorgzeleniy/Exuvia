@@ -7,13 +7,18 @@ Input: IR jsonl, one entry per line:
 
 Entries with dedup_of set are DROPPED (dedup was decided at IR authoring).
 Placement per target:
-  omp    -> RULES.md (safety) + AGENTS.md (invariant, rule, fact)
-  claude -> CLAUDE.md (all, safety section first)
-  codex  -> AGENTS.md (all, safety section first)
-  cursor -> .cursorrules (all, safety section first)
+  omp     -> RULES.md (safety) + AGENTS.md (invariant, rule, fact)
+  claude  -> CLAUDE.md (all, safety section first)
+  codex   -> AGENTS.md (all, safety section first)
+  cursor  -> .cursorrules (all, safety section first)
 
-Also writes translation-report.md: counts, dedups, source mapping.
-Stdlib only; read-only except the --out dir.
+Modes:
+  default        emit files + translation-report.md into --out
+  --check        verify the LIVE files at --out against the mechanical emission
+                 from the IR; exit 1 on divergence (CI-friendly: catches
+                 "two harness configs drifted apart" after a migration)
+
+Stdlib only; without --check it writes only into --out.
 """
 from __future__ import annotations
 
@@ -47,8 +52,8 @@ def load_ir(path: Path) -> tuple[list[dict], list[dict]]:
     return kept, dropped
 
 
-def emit(kept: list[dict], target: str, out: Path, name: str) -> None:
-    out.mkdir(parents=True, exist_ok=True)
+def render_target(kept: list[dict], target: str, name: str) -> dict[str, str]:
+    files = {}
     for fname, kinds in TARGETS[target]:
         sections = []
         for kind in kinds:
@@ -60,9 +65,39 @@ def emit(kept: list[dict], target: str, out: Path, name: str) -> None:
             sections.append(f"## {KIND_HEADERS[kind]}\n\n{body}\n\n<!-- sources: {srcs} -->")
         if not sections:
             continue
-        content = f"# {name} — translated from source corpus (exuvia)\n\n" + "\n\n".join(sections)
+        files[fname] = f"# {name} — translated from source corpus (exuvia)\n\n" + "\n\n".join(sections)
+    return files
+
+
+def emit(kept: list[dict], target: str, out: Path, name: str) -> None:
+    out.mkdir(parents=True, exist_ok=True)
+    for fname, content in render_target(kept, target, name).items():
         (out / fname).write_text(content, encoding="utf-8")
-        print(f"  wrote {out / fname} ({len(sections)} section(s))")
+        print(f"  wrote {out / fname}")
+
+
+def check(kept: list[dict], target: str, live: Path, name: str) -> int:
+    bad = 0
+    for fname, expected in render_target(kept, target, name).items():
+        p = live / fname
+        if not p.exists():
+            print(f"DIVERGED {fname}: file missing")
+            bad += 1
+            continue
+        actual = p.read_text(encoding="utf-8", errors="replace")
+        if actual == expected:
+            print(f"OK       {fname}")
+            continue
+        a_lines = set(actual.splitlines())
+        missing = [l for l in expected.splitlines() if l not in a_lines and l.strip()]
+        extra = [l for l in actual.splitlines() if l not in set(expected.splitlines()) and l.strip()]
+        ids = [e["id"] for e in kept if e["text"].rstrip() in "\n".join(missing)]
+        hint = f"rules lost: {', '.join(ids)}" if ids else "content drift"
+        print(f"DIVERGED {fname}: {len(missing)} expected line(s) missing, "
+              f"{len(extra)} unexpected ({hint})")
+        bad += 1
+    print(f"\n{len(TARGETS[target]) - bad}/{len(TARGETS[target])} files in sync" if TARGETS[target] else "")
+    return 1 if bad else 0
 
 
 def report(kept: list[dict], dropped: list[dict], target: str, out: Path) -> None:
@@ -84,12 +119,16 @@ def main() -> int:
     ap.add_argument("--target", required=True, choices=sorted(TARGETS))
     ap.add_argument("--out", required=True)
     ap.add_argument("--name", default="Agent instructions")
+    ap.add_argument("--check", action="store_true",
+                    help="verify live files at --out against the IR emission instead of writing")
     a = ap.parse_args()
     kept, dropped = load_ir(Path(a.ir))
     kinds = {k: sum(1 for e in kept if e.get("kind") == k) for k in KIND_ORDER}
     print(f"IR: {len(kept)} entries kept, {len(dropped)} dedup-dropped "
           f"(safety={kinds['safety']} invariant={kinds['invariant']} "
           f"rule={kinds['rule']} fact={kinds['fact']})")
+    if a.check:
+        return check(kept, a.target, Path(a.out), a.name)
     emit(kept, a.target, Path(a.out), a.name)
     report(kept, dropped, a.target, Path(a.out))
     return 0

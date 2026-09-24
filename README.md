@@ -8,7 +8,7 @@
 
 <a href="https://www.npmjs.com/package/exuvia"><img src="https://img.shields.io/npm/v/exuvia?style=flat-square&color=orange&label=npm" alt="exuvia on npm"></a>
 <a href="https://github.com/Zorgzeleniy/Exuvia/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT"></a>
-<a href="#-quick-start"><img src="https://img.shields.io/badge/works_with-Claude_Code_·_Codex_·_omp_·_Cursor_·_OpenCode-blue?style=flat-square" alt="5 harnesses"></a>
+<a href="#-quick-start"><img src="https://img.shields.io/badge/works_with-Claude_Code_·_Codex_·_omp_·_Cursor_·_Windsurf_·_OpenCode-blue?style=flat-square" alt="6 harnesses"></a>
 <img src="https://img.shields.io/badge/engines-python_stdlib-teal?style=flat-square" alt="stdlib only">
 <img src="https://img.shields.io/badge/LLM_judgment-optional__and_separated-purple?style=flat-square" alt="human decides">
 
@@ -207,7 +207,7 @@ npx exuvia init
 
 ## 📊 The Numbers
 
-From this repo. The A/B row is reproducible with `python bench/run_ab.py` (LLM, ~30 min); the suite itself is `python tests/run.py --t1` (free, seconds) and `--t2` (LLM, ~20 min).
+From this repo — pilot scale (4 tasks × 5 repeats × 2 arms, one model), so read the deltas as a pattern, not a coefficient. The A/B rows are reproducible with `python bench/run_ab.py` (LLM, ~30 min); the suite is `python tests/run.py --t1` (free, seconds) and `--t2` (LLM, ~20 min).
 
 | What | Measured on | Result |
 |---|---|---|
@@ -229,7 +229,7 @@ From this repo. The A/B row is reproducible with `python bench/run_ab.py` (LLM, 
 | `/exuvia-translate` | migrate the corpus between harnesses (omp↔Claude↔Codex↔Cursor), probe-checked equivalence |
 | `/exuvia-blame` | provenance for any instruction line: ledger + session-log mining — who wrote it, when, why |
 
-omp: all five install as skills and auto-trigger on plain asks (*"audit my prompt debt"*) — they wake when you ask, never on their own. Cursor / OpenCode: a single audit adapter (audit + apply). Engines: `~/.exuvia/engines` (python stdlib, zero dependencies).
+omp: all five install as skills and auto-trigger on plain asks (*"audit my prompt debt"*) — they wake when you ask, never on their own. Cursor / Windsurf / OpenCode: a single audit adapter (audit + apply). Engines: `~/.exuvia/engines` (python stdlib, zero dependencies).
 
 ### Where things live
 
@@ -237,6 +237,17 @@ In your project, `.exuvia/`: `report.md` + `decisions.md` (audit), `probes-*.md`
 
 ---
 
+### Run it in CI
+
+After an audit leaves `.exuvia/facts.toml` in your repo, the deterministic drift gate runs keyless in any CI — zero-config as a GitHub Action:
+
+```yaml
+- uses: Zorgzeleniy/Exuvia@main
+```
+
+That's the whole step: it installs the engines and fails the build when a standing fact goes STALE (path moved, command gone, MCP server unused for 30 days). Constitution probes need a live agent, so those stay a local/agent-CLI concern, not CI.
+
+---
 ## 🚫 What it never does
 
 The five invariants are the product. Breaking any of them is a semver-major decision.
@@ -255,7 +266,7 @@ The five invariants are the product. Breaking any of them is a semver-major deci
 |---|---|
 | **probe** | a background agent session asked to quote one rule — if it quotes, the rule is alive |
 | **AGENTS.md / CLAUDE.md** | the file where your agent's standing instructions live; same role, different tool names |
-| **harness** | the agent tool itself (Claude Code, Codex, Cursor, omp, OpenCode) |
+| **harness** | the agent tool itself (Claude Code, Codex, Cursor, Windsurf, omp, OpenCode) |
 | **instruction corpus** | all your standing instructions together: CLAUDE.md/AGENTS.md, skills, subagent prompts, MCP tool descriptions |
 | **drift** | a standing instruction that no longer matches the actual machine (path moved, tool updated, port closed) |
 | **ledger** | a local change log exuvia keeps: who wrote/changed which line, when, and why |

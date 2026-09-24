@@ -27,6 +27,13 @@ per surviving line:
 python <exuvia>/translate/emit.py --ir .exuvia/ir.jsonl --target <omp|claude|codex|cursor> --out <dir>
 ```
 
+Divergence check (CI-friendly — verifies the live target files still match the
+mechanical emission from the IR; exit 1 on drift, names the lost rule ids):
+
+```
+python <exuvia>/translate/emit.py --ir .exuvia/ir.jsonl --target <t> --out <live-dir> --check
+```
+
 `<exuvia>` = repo checkout or `~/.exuvia/engines`. Placement: omp → safety to
 `RULES.md`, the rest to `AGENTS.md`; claude → `CLAUDE.md`; codex → `AGENTS.md`;
 cursor → `.cursorrules` (safety section first everywhere). A

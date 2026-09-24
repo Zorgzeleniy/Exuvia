@@ -42,7 +42,7 @@ For every inventoried file compute:
 
 ## Phase 3 — Report and decisions file (funnel format)
 
-Write `.exuvia/report.md` in the funnel structure — reading order = priority order.
+Write `.exuvia/report-<YYYYMMDD-HHMM>.md` (versioned — NEVER overwrite a previous report: the versioned series is the prompt-debt history) and refresh `.exuvia/report.md` as a copy of the newest one (latest-pointer for existing links and tools).
 
 **Format contract (binding):**
 - The executive line is a literal template — only the numbers change:

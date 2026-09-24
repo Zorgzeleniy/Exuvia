@@ -1,0 +1,25 @@
+name: "exuvia drift check"
+description: "Deterministic CI gate for standing agent instructions: facts-vs-environment drift + MCP pay-vs-use. No LLM, no API keys."
+branding:
+  icon: "check-circle"
+  color: "orange"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: install exuvia engines
+      shell: bash
+      run: npx -y exuvia@latest init
+    - name: drift check
+      shell: bash
+      run: |
+        if [ ! -f .exuvia/facts.toml ]; then
+          echo "no .exuvia/facts.toml — run /exuvia-audit (or ask exuvia to ingest your facts) and commit it. Skipping."
+          exit 0
+        fi
+        python ~/.exuvia/engines/drift/check.py --facts .exuvia/facts.toml --base .

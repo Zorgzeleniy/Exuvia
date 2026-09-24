@@ -31,6 +31,7 @@ function harnesses() {
     cmdBlame: read("templates/command-blame.md"),
     cmdTranslate: read("templates/command-translate.md"),
     cursor: read("templates/cursor-rule.mdc"),
+    windsurf: read("templates/windsurf.md"),
     opencode: read("templates/opencode.md"),
   };
   return [
@@ -70,6 +71,10 @@ function harnesses() {
     {
       id: "cursor", name: "Cursor", marker: path.join(HOME, ".cursor"),
       targets: [[path.join(HOME, ".cursor", "rules", "exuvia.mdc"), render(T.cursor)]],
+    },
+    {
+      id: "windsurf", name: "Windsurf", marker: path.join(HOME, ".codeium", "windsurf"),
+      targets: [[path.join(HOME, ".codeium", "windsurf", "memories", "global_rules.md"), render(T.windsurf)]],
     },
     {
       id: "opencode", name: "OpenCode", marker: path.join(HOME, ".config", "opencode"),

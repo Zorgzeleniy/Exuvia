@@ -61,10 +61,10 @@ def seed_workdir(task: str, wd: Path) -> None:
             shutil.copy2(f, wd / f.name)
 
 
-def verify(task: str, wd: Path) -> tuple[bool, str]:
+def verify(task: str, wd: Path, config_dir: Path) -> tuple[bool, str]:
     tdir = BENCH / "tasks" / task
     for side in ("conventions.json", "qa.json"):
-        src = BENCH / "configs" / "popular-v1" / side
+        src = config_dir / side
         if src.exists():
             shutil.copy2(src, wd / side)
     r = sh([sys.executable, str(tdir / "verify.py")], cwd=wd, timeout=120)
@@ -98,15 +98,18 @@ def parse_json_metrics(jsonl: str) -> dict:
     return m
 
 
-def run_arm_task(profile: str, task: str, repeat: int, runs_dir: Path) -> dict:
+def run_arm_task(profile: str, task: str, repeat: int, runs_dir: Path, config_dir: Path) -> dict:
     wd = runs_dir / task / f"r{repeat}"
     seed_workdir(task, wd)
-    prompt = (BENCH / "tasks" / task / "task.md").read_text(encoding="utf-8")
+    task_md = config_dir / "tasks" / task / "task.md"
+    if not task_md.exists():
+        task_md = BENCH / "tasks" / task / "task.md"
+    prompt = task_md.read_text(encoding="utf-8")
     prompt += "\n\nWork strictly in the current directory. No git commits."
     t0 = time.monotonic()
     r = sh(["omp", "--profile", profile, "-p", prompt, "--mode=json"], cwd=wd)
     wall = round(time.monotonic() - t0)
-    ok, detail = verify(task, wd)
+    ok, detail = verify(task, wd, config_dir)
     metrics = parse_json_metrics(r.stdout or "")
     return {"task": task, "rep": repeat, "pass": ok, "detail": detail,
             "wall_s": wall, **metrics}
@@ -181,11 +184,18 @@ def main() -> int:
     if a.arm_b:
         arms["b"] = a.arm_b
     profiles = {}
+    config_dirs = {}
     for k, corp in arms.items():
+        corp_path = Path(corp)
+        if (corp_path / "corpus").is_dir():          # config dir given -> mount its corpus/
+            config_dirs[k] = corp_path
+            corp_path = corp_path / "corpus"
+        else:
+            config_dirs[k] = corp_path.parent
         profiles[k] = f"bench-{k}"
-        prof = setup_profile(profiles[k], Path(corp), a.model)
+        prof = setup_profile(profiles[k], corp_path, a.model)
         n = len(list((prof / "skills").glob("*/")))
-        print(f"[arm {k}] profile {profiles[k]}: {n} skills, model {a.model}")
+        print(f"[arm {k}] profile {profiles[k]}: {n} skills, corpus mounted={(prof / 'AGENTS.md').exists()}, model {a.model}")
     if a.setup_only:
         return 0
 
@@ -194,7 +204,7 @@ def main() -> int:
     for k, prof_name in profiles.items():
         for task in a.tasks:
             for rep in range(1, a.repeats + 1):
-                row = run_arm_task(prof_name, task, rep, runs_dir / f"arm-{k}")
+                row = run_arm_task(prof_name, task, rep, runs_dir / f"arm-{k}", config_dirs[k])
                 row["arm"] = k
                 row["model"] = a.model
                 rows.append(row)

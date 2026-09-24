@@ -1,0 +1,5 @@
+{
+ "commit_regex": "^(feat|fix|docs|chore|refactor|test)(\\([a-zA-Z0-9_-]+\\))?: \\S.+ \\[AI\\]$",
+ "file_rules": ["eof_newline", "no_trailing_ws"],
+ "must_mention": "poe"
+}

@@ -1,0 +1,7 @@
+[
+ {"n":1,"any_of":["ward"]},
+ {"n":2,"any_of":["typespec","autogen"]},
+ {"n":3,"any_of":["aidev-note"]},
+ {"n":4,"any_of":["120"]},
+ {"n":5,"any_of":["confirm","confirmation"]}
+]

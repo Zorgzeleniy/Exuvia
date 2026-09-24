@@ -101,7 +101,7 @@ poe test      # ward test --exclude .venv (pytest for integrations-service)
 
 Every golden rule, every safety gate, every working command, the TypeSpec and ward specifics, the AIDEV ritual — all still there, deduplicated.
 
-**19,342 → 4,288 bytes (−78%).** And in the [A/B benchmark](#-the-numbers), a cleaned corpus cut **non-cached** input tokens **−87%** on the first task while cutting total cost **−26%** — quality flat.
+**19,342 → 4,288 bytes (−78%).** This very file then ran as an arm in the [A/B benchmark](#-the-numbers): quality 100% in both arms, cost −14% on the bugfix task, −8% on the coding task — and +80% on the conventions task, because after the cleanup the rules actually bind and the agent works them properly.
 
 ```
 P1 generated   → alive — "Never manually edit generated files (`autogen/`) — they get overwritten" quoted
@@ -212,7 +212,8 @@ From this repo. The A/B row is reproducible with `python bench/run_ab.py` (LLM, 
 | What | Measured on | Result |
 |---|---|---|
 | **Real-world cleanup** (maintainer's own harness) | AGENTS.md + skills + MCP | AGENTS.md −65% · 17 low-quality skills removed · MCP surface 4.0k → 2.4k tokens/session |
-| **A/B shed-bench** | real popular config (41.6k★ CLAUDE.md + 23 skills incl. 2 viral) · 4 deterministic tasks × 5 repeats × 2 arms, same model | first coding task: **−87% non-cached input** (19,343 → 2,506 tok) · **−26% cost** (with cache reads included the token total is +24% — served at cache price); conventions: **−33% wall · −18% cost**; other tasks flat · quality flat (100/100/100/80% in both arms) · [dual-metric table](./bench/runs/20260923-215247/results.md) |
+| **A/B shed-bench · popular config** | 41.6k★ CLAUDE.md + 23 skills incl. 2 viral · 4 deterministic tasks × 5 repeats × 2 arms, same model | cost **−33%** first coding task · **−29%** bugfix · qa −4% · conventions **+12%** — the rules-binding task: cleaned corpus binds harder, agent works more thoroughly · quality **100% in both arms** · [table](./bench/runs/20260924-174948/results.md) |
+| **A/B shed-bench · single file, no skills** | julep `AGENTS.md` 19,342 → 4,288 B (the See-it demo above) · same protocol | cost **−14%** bugfix · −8% coding task · qa −3% · conventions **+80%** — same pattern reproduced · quality **100% in both arms** · [table](./bench/runs/20260924-190543/results.md) |
 | **Translator roundtrip** | omp → neutral intermediate format → omp, probe-checked | first run **caught a line genuinely lost in migration** (2/3 → FAIL); after the fix, 3/3 green |
 
 ---

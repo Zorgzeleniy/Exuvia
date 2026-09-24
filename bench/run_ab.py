@@ -198,6 +198,7 @@ def main() -> int:
         print(f"[arm {k}] profile {profiles[k]}: {n} skills, corpus mounted={(prof / 'AGENTS.md').exists()}, model {a.model}")
     if a.setup_only:
         return 0
+    runs_dir = BENCH / "runs" / time.strftime("%Y%m%d-%H%M%S")
     label_dir = config_dirs["a"]   # labeling (qa/conventions/task.md) lives in the baseline arm's config
     rows = []
     for k, prof_name in profiles.items():

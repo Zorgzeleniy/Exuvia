@@ -1,0 +1,11 @@
+{
+ "topics": ["poe", "typespec", "ward", "aidev", "temporal", "semver", "agents-api", "worktree", "memory-store"],
+ "rules": [
+  {"id": "commit-format",        "check": "commit_regex"},
+  {"id": "commit-ai-tag",        "check": "commit_has", "substr": "[AI]"},
+  {"id": "commit-explains-why",  "check": "commit_words", "min": 4},
+  {"id": "notes-eof-newline",    "check": "eof"},
+  {"id": "notes-no-trailing-ws", "check": "no_ws"},
+  {"id": "notes-length-window",  "check": "notes_len", "min": 10, "max": 25}
+ ]
+}

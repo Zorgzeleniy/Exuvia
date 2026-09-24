@@ -212,8 +212,8 @@ From this repo. The A/B row is reproducible with `python bench/run_ab.py` (LLM, 
 | What | Measured on | Result |
 |---|---|---|
 | **Real-world cleanup** (maintainer's own harness) | AGENTS.md + skills + MCP | AGENTS.md −65% · 17 low-quality skills removed · MCP surface 4.0k → 2.4k tokens/session |
-| **A/B shed-bench · popular config** | 41.6k★ CLAUDE.md + 23 skills incl. 2 viral · 4 deterministic tasks × 5 repeats × 2 arms, same model | cost **−33%** first coding task · **−29%** bugfix · qa −4% · conventions **+12%** — the rules-binding task: cleaned corpus binds harder, agent works more thoroughly · quality **100% in both arms** · [table](./bench/runs/20260924-174948/results.md) |
-| **A/B shed-bench · single file, no skills** | julep `AGENTS.md` 19,342 → 4,288 B (the See-it demo above) · same protocol | cost **−14%** bugfix · −8% coding task · qa −3% · conventions **+80%** — same pattern reproduced · quality **100% in both arms** · [table](./bench/runs/20260924-190543/results.md) |
+| **A/B shed-bench · popular config** | 41.6k★ CLAUDE.md + 23 skills incl. 2 viral · 4 deterministic tasks × 5 repeats × 2 arms, same model | cost **−33%** first coding task · **−29%** bugfix · qa −4% · conventions **+12% cost → +23% grounding**: hard rules 100% in both arms, but rules that drowned in the bloat (`venv`, `ephemeral links`) surface only post-cleanup · [table](./bench/runs/20260924-174948/results.md) · [inventory](./bench/rules_inventory.py) |
+| **A/B shed-bench · single file, no skills** | julep `AGENTS.md` 19,342 → 4,288 B (the See-it demo above) · same protocol | cost **−14%** bugfix · −8% coding task · qa −3% · conventions **+80% cost → +10% grounding** — same pattern on a second corpus · [table](./bench/runs/20260924-190543/results.md) |
 | **Translator roundtrip** | omp → neutral intermediate format → omp, probe-checked | first run **caught a line genuinely lost in migration** (2/3 → FAIL); after the fix, 3/3 green |
 
 ---

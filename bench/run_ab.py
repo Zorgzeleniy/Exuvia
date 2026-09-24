@@ -98,10 +98,10 @@ def parse_json_metrics(jsonl: str) -> dict:
     return m
 
 
-def run_arm_task(profile: str, task: str, repeat: int, runs_dir: Path, config_dir: Path) -> dict:
+def run_arm_task(profile: str, task: str, repeat: int, runs_dir: Path, label_dir: Path) -> dict:
     wd = runs_dir / task / f"r{repeat}"
     seed_workdir(task, wd)
-    task_md = config_dir / "tasks" / task / "task.md"
+    task_md = label_dir / "tasks" / task / "task.md"
     if not task_md.exists():
         task_md = BENCH / "tasks" / task / "task.md"
     prompt = task_md.read_text(encoding="utf-8")
@@ -109,7 +109,7 @@ def run_arm_task(profile: str, task: str, repeat: int, runs_dir: Path, config_di
     t0 = time.monotonic()
     r = sh(["omp", "--profile", profile, "-p", prompt, "--mode=json"], cwd=wd)
     wall = round(time.monotonic() - t0)
-    ok, detail = verify(task, wd, config_dir)
+    ok, detail = verify(task, wd, label_dir)
     metrics = parse_json_metrics(r.stdout or "")
     return {"task": task, "rep": repeat, "pass": ok, "detail": detail,
             "wall_s": wall, **metrics}
@@ -198,13 +198,12 @@ def main() -> int:
         print(f"[arm {k}] profile {profiles[k]}: {n} skills, corpus mounted={(prof / 'AGENTS.md').exists()}, model {a.model}")
     if a.setup_only:
         return 0
-
-    runs_dir = BENCH / "runs" / time.strftime("%Y%m%d-%H%M%S")
+    label_dir = config_dirs["a"]   # labeling (qa/conventions/task.md) lives in the baseline arm's config
     rows = []
     for k, prof_name in profiles.items():
         for task in a.tasks:
             for rep in range(1, a.repeats + 1):
-                row = run_arm_task(prof_name, task, rep, runs_dir / f"arm-{k}", config_dirs[k])
+                row = run_arm_task(prof_name, task, rep, runs_dir / f"arm-{k}", label_dir)
                 row["arm"] = k
                 row["model"] = a.model
                 rows.append(row)

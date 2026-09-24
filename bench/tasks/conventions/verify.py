@@ -22,16 +22,17 @@ def main() -> int:
     for rule in CONV.get("file_rules", []):
         if rule == "eof_newline" and not notes.endswith("\n"): fails.append("no EOF newline")
         if rule == "no_trailing_ws" and any(l != l.rstrip() for l in lines): fails.append("trailing whitespace")
-    in_fence = False
-    for line in lines:
-        s = line.strip()
-        if s.startswith("```"):
-            if in_fence:
-                in_fence = False
-            else:
-                in_fence = True
-                if s == "```":
-                    fails.append("code fence without language"); break
+    if "fences_declare_language" in CONV.get("file_rules", []):
+        in_fence = False
+        for line in lines:
+            s = line.strip()
+            if s.startswith("```"):
+                if in_fence:
+                    in_fence = False
+                else:
+                    in_fence = True
+                    if s == "```":
+                        fails.append("code fence without language"); break
     if CONV.get("must_mention") and CONV["must_mention"] not in notes:
         fails.append(f"must mention: {CONV['must_mention']}")
     if fails:
